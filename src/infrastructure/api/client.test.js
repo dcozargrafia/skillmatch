@@ -98,8 +98,7 @@ describe('interceptor 401', () => {
   it('redirige a /login cuando recibe 401 fuera de rutas de auth', async () => {
     window.location.pathname = '/student/projects';
 
-    await errorInterceptor({ response: { status: 401 } });
-
+    await expect(errorInterceptor({ response: { status: 401 } })).rejects.toMatchObject({ response: { status: 401 } });
     expect(window.location.href).toBe('/login');
   });
 

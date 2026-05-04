@@ -20,13 +20,15 @@ const mockApplicationsApproved = [
     id: 'a1',
     status: 'approved',
     compatibility_score: 90,
-    student: { id: 'u1', name: 'Ana García', email: 'ana@example.com' },
+    student_name: 'Ana García',
+    student_email: 'ana@example.com',
   },
   {
     id: 'a2',
     status: 'approved',
     compatibility_score: 75,
-    student: { id: 'u2', name: 'Carlos López', email: 'carlos@example.com' },
+    student_name: 'Carlos López',
+    student_email: 'carlos@example.com',
   },
 ];
 
@@ -78,9 +80,9 @@ describe('NgoProjectAssignmentPage', () => {
 
   it('AC4: solo muestra candidatos con status approved', async () => {
     getApplicationsByProject.mockResolvedValue([
-      { id: 'a1', status: 'approved', compatibility_score: 90, student: { id: 'u1', name: 'Ana García', email: 'ana@example.com' } },
-      { id: 'a2', status: 'pending', compatibility_score: 60, student: { id: 'u2', name: 'Carlos López', email: 'carlos@example.com' } },
-      { id: 'a3', status: 'rejected', compatibility_score: 50, student: { id: 'u3', name: 'Pedro Díaz', email: 'pedro@example.com' } },
+      { id: 'a1', status: 'approved', compatibility_score: 90, student_name: 'Ana García', student_email: 'ana@example.com' },
+      { id: 'a2', status: 'pending', compatibility_score: 60, student_name: 'Carlos López', student_email: 'carlos@example.com' },
+      { id: 'a3', status: 'rejected', compatibility_score: 50, student_name: 'Pedro Díaz', student_email: 'pedro@example.com' },
     ]);
     renderPage();
     await screen.findByText('Ana García');

@@ -60,7 +60,8 @@ lerna-debug.log*
 .claude/
 CLAUDE.md
 AGENTS.md
-.sisyphus/
+.atl/
+
 
 # Archivos de coverage de tests
 coverage

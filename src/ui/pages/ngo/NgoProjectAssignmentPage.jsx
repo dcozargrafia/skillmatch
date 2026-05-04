@@ -80,8 +80,8 @@ function NgoProjectAssignmentPage() {
               <div key={app.id} className="card">
                 <div className="card__header">
                   <div>
-                    <h3 className="card__title">{app.student.name}</h3>
-                    <p className="card__subtitle">{app.student.email}</p>
+                    <h3 className="card__title">{app.student_name}</h3>
+                    <p className="card__subtitle">{app.student_email}</p>
                   </div>
                   {app.compatibility_score != null && (
                     <span className="score font-mono">{app.compatibility_score}</span>

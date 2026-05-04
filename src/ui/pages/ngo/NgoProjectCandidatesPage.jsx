@@ -57,8 +57,8 @@ function NgoProjectCandidatesPage() {
             <div key={app.id} className="card">
               <div className="card__header">
                 <div>
-                  <h2 className="card__title">{app.student.name}</h2>
-                  <p className="card__subtitle">{app.student.email}</p>
+                  <h2 className="card__title">{app.student_name}</h2>
+                  <p className="card__subtitle">{app.student_email}</p>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
                   {app.compatibility_score != null && (

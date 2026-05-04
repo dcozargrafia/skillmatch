@@ -15,13 +15,15 @@ const mockApplications = [
     id: 'a1',
     status: 'pending',
     compatibility_score: 85,
-    student: { id: 'u1', name: 'Ana García', email: 'ana@example.com' },
+    student_name: 'Ana García',
+    student_email: 'ana@example.com',
   },
   {
     id: 'a2',
     status: 'approved',
     compatibility_score: 70,
-    student: { id: 'u2', name: 'Carlos López', email: 'carlos@example.com' },
+    student_name: 'Carlos López',
+    student_email: 'carlos@example.com',
   },
 ];
 
