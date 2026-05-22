@@ -24,6 +24,14 @@ React 19 + Vite (JavaScript). Hexagonal architecture: `src/domain/` (pure, no Re
 3. Subir con PR
 4. **Preguntar al usuario** antes de volver a tocar algo si hay decisiones pendientes
 
+### Reglas de desarrollo
+
+1. **Verificar tests antes de subir PR** — siempre `npm test` pasa antes de push
+2. **API spec como fuente de verdad** — antes de asumir campos en la respuesta, verificar en `docs/skillmatch-api.json`
+3. **Acceso al backend** — el backend vive en `../skillmatch-api/` y también está corriendo. Para cambios en la API, preguntar al usuario antes de tocarlo
+4. **Respectar el diseño hexagonal** — `domain/` es puro (sin React ni fetch); `infrastructure/` solo API/storage; nunca mezclarlas
+5. **SDD para cambios no triviales** — bugs que requieren investigación, features nuevas, o refactors; no usar SDD para fixes obvios de una línea
+
 ### Antes de cerrar sesión
 
 - Hacer `mem_session_summary` con lo completado y lo que queda
