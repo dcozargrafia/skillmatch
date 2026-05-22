@@ -20,6 +20,7 @@ function renderPage() {
       <Routes>
         <Route path="/ngo/projects" element={<NgoProjectsPage />} />
         <Route path="/ngo/projects/new" element={<div>NuevoProyecto</div>} />
+        <Route path="/ngo/projects/:id" element={<div>Detalle</div>} />
         <Route path="/ngo/projects/:id/edit" element={<div>EditarProyecto</div>} />
       </Routes>
     </MemoryRouter>
@@ -64,5 +65,20 @@ describe('NgoProjectsPage', () => {
     await screen.findByText('Web banco de alimentos');
     const editLinks = screen.getAllByRole('link', { name: /editar/i });
     expect(editLinks[0]).toHaveAttribute('href', '/ngo/projects/p1/edit');
+  });
+
+  it('cada proyecto tiene enlace a su detalle con href correcto', async () => {
+    renderPage();
+    await screen.findByText('Web banco de alimentos');
+    const detailLinks = screen.getAllByRole('link', { name: /ver detalle/i });
+    expect(detailLinks[0]).toHaveAttribute('href', '/ngo/projects/p1');
+    expect(detailLinks[1]).toHaveAttribute('href', '/ngo/projects/p2');
+  });
+
+  it('estado vacío no muestra enlace a detalle', async () => {
+    getOwnProjects.mockResolvedValue([]);
+    renderPage();
+    await screen.findByText(/no tienes proyectos/i);
+    expect(screen.queryByRole('link', { name: /ver detalle/i })).not.toBeInTheDocument();
   });
 });

@@ -44,6 +44,9 @@ function NgoProjectsPage() {
               <div className="card__footer">
                 <span className="badge">{p.status}</span>
                 <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                  <Link to={`/ngo/projects/${p.id}`} className="btn btn--secondary btn--sm">
+                    Ver detalle
+                  </Link>
                   <Link to={`/ngo/projects/${p.id}/candidates`} className="btn btn--secondary btn--sm">
                     Candidatos
                   </Link>
