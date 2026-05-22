@@ -13,20 +13,11 @@ import {
   reviewDeliverable,
 } from '../../../infrastructure/api/deliverableApi.js';
 import {
-  getNextStatuses,
-  getStatusLabel,
   hasActiveDeliverable,
   isTerminalStatus,
 } from '../../../domain/project/Project.js';
 
 const REVIEW_STATUSES = ['in_review'];
-const ACTION_LABELS = {
-  in_progress: 'Iniciar proyecto',
-  in_review: 'Enviar a revisión',
-  completed: 'Marcar como completado',
-  rejected: 'Marcar como rechazado',
-};
-
 function DeliverableCard({ deliverable, onReview, readOnly }) {
   const badgeClass =
     deliverable.status === 'approved'
@@ -247,14 +238,10 @@ function NgoProjectDetailPage() {
   }
 
   async function handleReview(deliverableId, status) {
-    try {
-      const updated = await reviewDeliverable(deliverableId, { status });
-      setDeliverables((prev) =>
-        prev.map((d) => (d.id === deliverableId ? { ...d, status: updated.status } : d))
-      );
-    } catch {
-      setErrorMsg('Error al revisar el entregable. Intenta de nuevo.');
-    }
+    await runMutationWithResync(
+      () => reviewDeliverable(deliverableId, { status }),
+      'Error al revisar el entregable. Intenta de nuevo.'
+    );
   }
 
   async function handleCreateDeliverable(event) {
@@ -282,15 +269,6 @@ function NgoProjectDetailPage() {
     setSubmittingDeliverable(false);
   }
 
-  async function handleStatusTransition(nextStatus) {
-    setMutatingStatus(true);
-    await runMutationWithResync(
-      () => updateProjectStatus(id, nextStatus),
-      'Error al actualizar el estado del proyecto. Intenta de nuevo.',
-    );
-    setMutatingStatus(false);
-  }
-
   async function handleCancelProject() {
     if (!window.confirm('¿Seguro que querés cancelar este proyecto?')) return;
 
@@ -298,6 +276,15 @@ function NgoProjectDetailPage() {
     await runMutationWithResync(
       () => cancelProject(id),
       'Error al cancelar el proyecto. Intenta de nuevo.',
+    );
+    setMutatingStatus(false);
+  }
+
+  async function handleMarkCompleted() {
+    setMutatingStatus(true);
+    await runMutationWithResync(
+      () => updateProjectStatus(id, 'completed'),
+      'Error al marcar el proyecto como completado. Intenta de nuevo.',
     );
     setMutatingStatus(false);
   }
@@ -317,9 +304,13 @@ function NgoProjectDetailPage() {
   const showCandidateSection = project.status === 'pending' && !assignment;
   const showAssignmentSection = !!assignment;
   const readOnly = isTerminal;
-  const nextStatuses = getNextStatuses(project.status).filter((status) => status !== 'cancelled');
   const showDeliverableForm =
     showAssignmentSection && !isTerminal && !hasActiveDeliverable(deliverables);
+  const canMarkProjectAsCompleted =
+    showAssignmentSection &&
+    project.status === 'in_review' &&
+    deliverables.length > 0 &&
+    deliverables.every((deliverable) => deliverable.status === 'approved');
 
   return (
     <div>
@@ -335,17 +326,15 @@ function NgoProjectDetailPage() {
           <p className="page-subtitle">{project.description}</p>
         </div>
         <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-          {!isTerminal &&
-            nextStatuses.map((status) => (
-              <button
-                key={status}
-                className="btn btn--secondary btn--sm"
-                disabled={mutatingStatus}
-                onClick={() => handleStatusTransition(status)}
-              >
-                {ACTION_LABELS[status] ?? `Cambiar a ${getStatusLabel(status)}`}
-              </button>
-            ))}
+          {canMarkProjectAsCompleted && (
+            <button
+              className="btn btn--primary btn--sm"
+              disabled={mutatingStatus}
+              onClick={handleMarkCompleted}
+            >
+              Marcar como completado
+            </button>
+          )}
           {!isTerminal && (
             <button
               className="btn btn--danger btn--sm"

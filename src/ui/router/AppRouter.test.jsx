@@ -13,7 +13,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Outlet } from 'react-router-dom';
 import useAuthStore from '../hooks/useAuthStore';
 import { AppRoutes } from './AppRouter';
 
@@ -21,7 +21,12 @@ import { AppRoutes } from './AppRouter';
 const Login = () => <div>LoginPage</div>;
 const Register = () => <div>RegisterPage</div>;
 const Student = () => <div>StudentLayout</div>;
-const Ngo = () => <div>NgoLayout</div>;
+const Ngo = () => (
+  <div>
+    NgoLayout
+    <Outlet />
+  </div>
+);
 const Admin = () => <div>AdminLayout</div>;
 const NgoProjectDetail = () => <div>NgoProjectDetailPage</div>;
 

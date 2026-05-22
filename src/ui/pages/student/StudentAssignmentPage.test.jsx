@@ -31,6 +31,10 @@ const mockDeliverables = [
   { id: 'd3', title: 'Frontend', status: 'approved', description: 'UI completa' },
 ];
 
+const mockDeliverablesWithRejected = [
+  { id: 'd4', title: 'Documentación', status: 'rejected', description: 'Corregir feedback' },
+];
+
 function renderPage(assignmentId = 'asgn1') {
   return render(
     <MemoryRouter initialEntries={[`/student/assignments/${assignmentId}`]}>
@@ -106,5 +110,17 @@ describe('StudentAssignmentPage', () => {
     await waitFor(() =>
       expect(submitDeliverable).toHaveBeenCalledWith('d2', 'https://example.com/file.pdf')
     );
+  });
+
+  it('AC8: un entregable rejected muestra acción de reanudación y reutiliza startDeliverable', async () => {
+    getDeliverablesByAssignment.mockResolvedValue(mockDeliverablesWithRejected);
+    startDeliverable.mockResolvedValue({ id: 'd4', title: 'Documentación', status: 'in_progress' });
+
+    renderPage();
+    await screen.findByText('Documentación');
+
+    fireEvent.click(screen.getByRole('button', { name: /reanudar/i }));
+
+    await waitFor(() => expect(startDeliverable).toHaveBeenCalledWith('d4'));
   });
 });

@@ -61,7 +61,7 @@ function StudentApplicationsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getAssignmentsByStatus(['assigned', 'in_progress', 'in_review']).then(async (assigns) => {
+    getAssignmentsByStatus(['assigned', 'in_progress', 'in_review', 'rejected']).then(async (assigns) => {
       const dels = await Promise.all(
         assigns.map((a) => getDeliverablesByAssignment(a.id))
       );
