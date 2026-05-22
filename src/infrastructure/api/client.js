@@ -22,7 +22,7 @@ client.interceptors.response.use(
 
     if (error.response?.status === 401 && !isAuthRoute) {
       window.location.href = '/login';
-      return Promise.resolve();
+      return Promise.reject(error);
     }
     return Promise.reject(error);
   },
