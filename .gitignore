@@ -59,6 +59,7 @@ lerna-debug.log*
 .vite/
 .claude/
 CLAUDE.md
+AGENTS.md
 .atl/
 
 # Archivos de especificación SDD (OpenSpec) — solo local, no subir a remote
