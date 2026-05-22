@@ -47,9 +47,6 @@ function NgoProjectsPage() {
                   <Link to={`/ngo/projects/${p.id}`} className="btn btn--secondary btn--sm">
                     Ver detalle
                   </Link>
-                  <Link to={`/ngo/projects/${p.id}/candidates`} className="btn btn--secondary btn--sm">
-                    Candidatos
-                  </Link>
                   <Link to={`/ngo/projects/${p.id}/edit`} className="btn btn--ghost btn--sm">
                     Editar
                   </Link>

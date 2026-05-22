@@ -75,6 +75,12 @@ describe('NgoProjectsPage', () => {
     expect(detailLinks[1]).toHaveAttribute('href', '/ngo/projects/p2');
   });
 
+  it('no muestra botón de Candidatos en cards de proyecto', async () => {
+    renderPage();
+    await screen.findByText('Web banco de alimentos');
+    expect(screen.queryByRole('link', { name: /candidatos/i })).not.toBeInTheDocument();
+  });
+
   it('estado vacío no muestra enlace a detalle', async () => {
     getOwnProjects.mockResolvedValue([]);
     renderPage();
