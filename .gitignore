@@ -98,7 +98,6 @@ $RECYCLE.BIN/
 *.crt
 
 # Directorios de documentación
-docs/
 apidoc/
 documentation/
 
