@@ -5,6 +5,8 @@ import NgoProjectDetailPage from './NgoProjectDetailPage';
 
 vi.mock('../../../infrastructure/api/projectApi.js', () => ({
   getProjectById: vi.fn(),
+  updateProjectStatus: vi.fn(),
+  cancelProject: vi.fn(),
 }));
 
 vi.mock('../../../infrastructure/api/assignmentApi.js', () => ({
@@ -17,14 +19,19 @@ vi.mock('../../../infrastructure/api/applicationApi.js', () => ({
 }));
 
 vi.mock('../../../infrastructure/api/deliverableApi.js', () => ({
+  createDeliverable: vi.fn(),
   getDeliverablesByAssignment: vi.fn(),
   reviewDeliverable: vi.fn(),
 }));
 
-import { getProjectById } from '../../../infrastructure/api/projectApi.js';
+import { getProjectById, updateProjectStatus, cancelProject } from '../../../infrastructure/api/projectApi.js';
 import { getAssignmentsByProject, createAssignment } from '../../../infrastructure/api/assignmentApi.js';
 import { getApplicationsByProject } from '../../../infrastructure/api/applicationApi.js';
-import { getDeliverablesByAssignment, reviewDeliverable } from '../../../infrastructure/api/deliverableApi.js';
+import {
+  createDeliverable,
+  getDeliverablesByAssignment,
+  reviewDeliverable,
+} from '../../../infrastructure/api/deliverableApi.js';
 
 const mockProject = (overrides = {}) => ({
   id: 'p1',
@@ -382,5 +389,162 @@ describe('Full integration scenarios (Task 6)', () => {
       expect(screen.getByText('Web banco de alimentos')).toBeInTheDocument();
     });
     expect(screen.queryByRole('button', { name: /seleccionar/i })).not.toBeInTheDocument();
+  });
+});
+
+describe('NGO status and deliverable controls (Slice 2)', () => {
+  it('muestra formulario de entregable cuando assignment existe y no hay entregable activo', async () => {
+    getProjectById.mockResolvedValue(mockProject({ status: 'in_progress' }));
+    getAssignmentsByProject.mockResolvedValue(mockAssignment);
+    getDeliverablesByAssignment.mockResolvedValue([mockDeliverable({ status: 'approved' })]);
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/título del entregable/i)).toBeInTheDocument();
+    });
+    expect(screen.getByRole('button', { name: /crear entregable/i })).toBeInTheDocument();
+  });
+
+  it('oculta formulario cuando existe entregable activo', async () => {
+    getProjectById.mockResolvedValue(mockProject({ status: 'in_progress' }));
+    getAssignmentsByProject.mockResolvedValue(mockAssignment);
+    getDeliverablesByAssignment.mockResolvedValue([mockDeliverable({ status: 'in_review' })]);
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText('Wireframes iniciales')).toBeInTheDocument();
+    });
+    expect(screen.queryByLabelText(/título del entregable/i)).not.toBeInTheDocument();
+  });
+
+  it('oculta formulario y acciones de estado en estado terminal', async () => {
+    getProjectById.mockResolvedValue(mockProject({ status: 'completed' }));
+    getAssignmentsByProject.mockResolvedValue(mockAssignment);
+    getDeliverablesByAssignment.mockResolvedValue([mockDeliverable({ status: 'approved' })]);
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText('María García')).toBeInTheDocument();
+    });
+    expect(screen.queryByLabelText(/título del entregable/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /enviar a revisión/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /cancelar proyecto/i })).not.toBeInTheDocument();
+  });
+
+  it('muestra acciones válidas por estado y ejecuta transición', async () => {
+    getProjectById
+      .mockResolvedValueOnce(mockProject({ status: 'assigned' }))
+      .mockResolvedValueOnce(mockProject({ status: 'in_progress' }));
+    getAssignmentsByProject.mockResolvedValue(mockAssignment);
+    getDeliverablesByAssignment.mockResolvedValue([]);
+    updateProjectStatus.mockResolvedValue({});
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /iniciar proyecto/i })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /iniciar proyecto/i }));
+
+    await waitFor(() => {
+      expect(updateProjectStatus).toHaveBeenCalledWith('p1', 'in_progress');
+    });
+    await waitFor(() => {
+      expect(getProjectById).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  it('pide confirmación para cancelar y cancela al confirmar', async () => {
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    getProjectById
+      .mockResolvedValueOnce(mockProject({ status: 'in_progress' }))
+      .mockResolvedValueOnce(mockProject({ status: 'cancelled' }));
+    getAssignmentsByProject.mockResolvedValue(mockAssignment);
+    getDeliverablesByAssignment.mockResolvedValue([]);
+    cancelProject.mockResolvedValue({});
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /cancelar proyecto/i })).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByRole('button', { name: /cancelar proyecto/i }));
+
+    await waitFor(() => {
+      expect(confirmSpy).toHaveBeenCalled();
+    });
+    await waitFor(() => {
+      expect(cancelProject).toHaveBeenCalledWith('p1');
+    });
+
+    confirmSpy.mockRestore();
+  });
+
+  it('crea entregable y recarga proyecto/asignación/entregables', async () => {
+    getProjectById
+      .mockResolvedValueOnce(mockProject({ status: 'in_progress' }))
+      .mockResolvedValueOnce(mockProject({ status: 'in_review' }));
+    getAssignmentsByProject.mockResolvedValue(mockAssignment);
+    getDeliverablesByAssignment
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([mockDeliverable({ id: 'd2', title: 'Backend API', status: 'pending' })]);
+    createDeliverable.mockResolvedValue({ id: 'd2' });
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/título del entregable/i)).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByLabelText(/título del entregable/i), {
+      target: { value: 'Backend API' },
+    });
+    fireEvent.change(screen.getByLabelText(/descripción del entregable/i), {
+      target: { value: 'Implementar endpoints' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /crear entregable/i }));
+
+    await waitFor(() => {
+      expect(createDeliverable).toHaveBeenCalledWith({
+        assignment_id: 'a1',
+        title: 'Backend API',
+        description: 'Implementar endpoints',
+      });
+    });
+    await waitFor(() => {
+      expect(getProjectById).toHaveBeenCalledTimes(2);
+    });
+    await waitFor(() => {
+      expect(screen.getByText('Backend API')).toBeInTheDocument();
+    });
+  });
+
+  it('muestra error claro y re-sync cuando transición falla con 400', async () => {
+    getProjectById
+      .mockResolvedValueOnce(mockProject({ status: 'assigned' }))
+      .mockResolvedValueOnce(mockProject({ status: 'assigned' }));
+    getAssignmentsByProject.mockResolvedValue(mockAssignment);
+    getDeliverablesByAssignment.mockResolvedValue([]);
+    const error400 = new Error('Bad request');
+    error400.response = { status: 400 };
+    updateProjectStatus.mockRejectedValue(error400);
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /iniciar proyecto/i })).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByRole('button', { name: /iniciar proyecto/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(/transición|estado|error/i);
+    });
+    await waitFor(() => {
+      expect(getProjectById).toHaveBeenCalledTimes(2);
+    });
   });
 });
