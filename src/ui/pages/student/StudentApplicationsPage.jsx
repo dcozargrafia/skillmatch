@@ -1,17 +1,25 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getOwnApplications } from '../../../infrastructure/api/applicationApi.js';
+import { getMyAssignments } from '../../../infrastructure/api/assignmentApi.js';
 
 function StudentApplicationsPage() {
   const [applications, setApplications] = useState([]);
+  const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getOwnApplications().then((data) => {
-      setApplications(data);
+    Promise.all([getOwnApplications(), getMyAssignments()]).then(([apps, assigns]) => {
+      setApplications(apps);
+      setAssignments(assigns);
       setLoading(false);
     });
   }, []);
+
+  const assignmentByProjectId = assignments.reduce((acc, a) => {
+    acc[a.project_id] = a.id;
+    return acc;
+  }, {});
 
   return (
     <div>
@@ -47,9 +55,9 @@ function StudentApplicationsPage() {
                   Compatibilidad: <span className="score">{app.compatibility_score}</span>
                 </p>
               )}
-              {app.status === 'approved' && (
+              {app.status === 'approved' && assignmentByProjectId[app.project_id] && (
                 <div className="card__footer">
-                  <Link to={`/student/assignments/${app.id}`} className="btn btn--primary btn--sm">
+                  <Link to={`/student/assignments/${assignmentByProjectId[app.project_id]}`} className="btn btn--primary btn--sm">
                     Ver assignment
                   </Link>
                 </div>
