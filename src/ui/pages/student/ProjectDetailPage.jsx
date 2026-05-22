@@ -2,15 +2,18 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getProjectById } from '../../../infrastructure/api/projectApi.js';
 import { createApplication } from '../../../infrastructure/api/applicationApi.js';
+import { getAllSkills } from '../../../infrastructure/api/skillsApi.js';
 
 function ProjectDetailPage() {
   const { id } = useParams();
   const [project, setProject] = useState(null);
+  const [skills, setSkills] = useState([]);
   const [applied, setApplied] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
     getProjectById(id).then(setProject);
+    getAllSkills().then(setSkills);
   }, [id]);
 
   async function handleApply() {
@@ -66,12 +69,15 @@ function ProjectDetailPage() {
             <h2 className="section__title">Skills requeridas</h2>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
-            {project.skills.map((s) => (
-              <span key={s.id} className="skill-tag">
-                {s.name}
-                <span className="skill-tag__level">· {s.required_level}</span>
-              </span>
-            ))}
+            {project.skills.map((s) => {
+              const skill = skills.find((sk) => sk.id === s.skill_id);
+              return skill ? (
+                <span key={s.skill_id} className="skill-tag">
+                  {skill.name}
+                  <span className="skill-tag__level">· {s.required_level}</span>
+                </span>
+              ) : null;
+            })}
           </div>
         </div>
       )}

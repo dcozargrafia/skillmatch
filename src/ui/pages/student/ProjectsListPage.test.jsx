@@ -23,7 +23,7 @@ const mockProjects = [
     modality: 'remoto',
     deadline: '2026-08-01',
     status: 'pending',
-    skills: [{ id: 's1', name: 'React', required_level: 'intermedio' }],
+    skills: [{ skill_id: 's1', required_level: 'intermediate' }],
   },
   {
     id: 'p2',
@@ -33,7 +33,7 @@ const mockProjects = [
     modality: 'presencial',
     deadline: '2026-09-15',
     status: 'pending',
-    skills: [{ id: 's2', name: 'Node.js', required_level: 'básico' }],
+    skills: [{ skill_id: 's2', required_level: 'basic' }],
   },
 ];
 

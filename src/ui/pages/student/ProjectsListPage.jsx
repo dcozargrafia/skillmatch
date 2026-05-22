@@ -86,9 +86,12 @@ function ProjectsListPage() {
                 <p>{project.description}</p>
               </div>
               <div className="card__meta">
-                {project.skills?.map((s) => (
-                  <span key={s.id} className="skill-tag">{s.name}</span>
-                ))}
+                {project.skills?.map((s) => {
+                  const skill = skills.find((sk) => sk.id === s.skill_id);
+                  return skill ? (
+                    <span key={s.skill_id} className="skill-tag">{skill.name}</span>
+                  ) : null;
+                })}
               </div>
               <div className="card__footer">
                 <span className="font-mono text-sm text-muted">{project.deadline}</span>
