@@ -23,6 +23,7 @@ const Register = () => <div>RegisterPage</div>;
 const Student = () => <div>StudentLayout</div>;
 const Ngo = () => <div>NgoLayout</div>;
 const Admin = () => <div>AdminLayout</div>;
+const NgoProjectDetail = () => <div>NgoProjectDetailPage</div>;
 
 /**
  * Renderiza AppRoutes dentro de MemoryRouter con stubs síncronos.
@@ -40,6 +41,23 @@ function renderAt(initialPath, user = null) {
         Student={Student}
         Ngo={Ngo}
         Admin={Admin}
+        NgoProjectDetail={NgoProjectDetail}
+      />
+    </MemoryRouter>,
+  );
+}
+
+function renderNgoDetailAt(initialPath, user = null) {
+  useAuthStore.setState({ user });
+  render(
+    <MemoryRouter initialEntries={[initialPath]}>
+      <AppRoutes
+        Login={Login}
+        Register={Register}
+        Student={Student}
+        Ngo={Ngo}
+        Admin={Admin}
+        NgoProjectDetail={NgoProjectDetail}
       />
     </MemoryRouter>,
   );
@@ -118,6 +136,23 @@ describe('RoleRoute — rol incorrecto redirige al dashboard propio', () => {
 
   it('rol admin en /student ve AdminLayout', () => {
     renderAt('/student', { role: 'admin' });
+    expect(screen.getByText('AdminLayout')).toBeTruthy();
+  });
+});
+
+describe('rutas NGO — proyecto detalle', () => {
+  it('rol ngo accede a /ngo/projects/p1 y ve NgoProjectDetailPage', () => {
+    renderAt('/ngo/projects/p1', { role: 'ngo' });
+    expect(screen.getByText('NgoProjectDetailPage')).toBeTruthy();
+  });
+
+  it('rol student en /ngo/projects/p1 es redirigido a su dashboard', () => {
+    renderAt('/ngo/projects/p1', { role: 'student' });
+    expect(screen.getByText('StudentLayout')).toBeTruthy();
+  });
+
+  it('rol admin en /ngo/projects/p1 es redirigido a su dashboard', () => {
+    renderAt('/ngo/projects/p1', { role: 'admin' });
     expect(screen.getByText('AdminLayout')).toBeTruthy();
   });
 });

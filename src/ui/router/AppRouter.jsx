@@ -23,6 +23,7 @@ const NgoProjectFormPage = lazy(() => import('../pages/ngo/NgoProjectFormPage'))
 const NgoProjectCandidatesPage = lazy(() => import('../pages/ngo/NgoProjectCandidatesPage'));
 const NgoProjectAssignmentPage = lazy(() => import('../pages/ngo/NgoProjectAssignmentPage'));
 const NgoDeliverablesPage = lazy(() => import('../pages/ngo/NgoDeliverablesPage'));
+const NgoProjectDetailPage = lazy(() => import('../pages/ngo/NgoProjectDetailPage'));
 const StudentApplicationsPage = lazy(() => import('../pages/student/StudentApplicationsPage'));
 const StudentAssignmentPage = lazy(() => import('../pages/student/StudentAssignmentPage'));
 const AdminDashboardPage = lazy(() => import('../pages/admin/AdminDashboardPage'));
@@ -86,6 +87,7 @@ export function AppRoutes({
   NgoProjectCandidates = NgoProjectCandidatesPage,
   NgoProjectAssignment = NgoProjectAssignmentPage,
   NgoDeliverables = NgoDeliverablesPage,
+  NgoProjectDetail = NgoProjectDetailPage,
   StudentApplications = StudentApplicationsPage,
   StudentAssignment = StudentAssignmentPage,
   AdminDashboard = AdminDashboardPage,
@@ -131,6 +133,7 @@ export function AppRoutes({
       >
         <Route path="projects" element={<NgoProjects />} />
         <Route path="projects/new" element={<NgoProjectForm />} />
+        <Route path="projects/:id" element={<NgoProjectDetail />} />
         <Route path="projects/:id/edit" element={<NgoProjectForm />} />
         <Route path="projects/:id/candidates" element={<NgoProjectCandidates />} />
         <Route path="projects/:id/assignment" element={<NgoProjectAssignment />} />
