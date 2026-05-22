@@ -19,3 +19,10 @@ export function getAssignmentById(id) {
 export function acceptAssignment(id) {
   return put(`/assignments/${id}/accept`, {});
 }
+
+export function getAssignmentsByStatus(statuses = []) {
+  return getMyAssignments().then((items) => {
+    if (!statuses.length) return items;
+    return items.filter((a) => statuses.includes(a.project_status ?? a.status));
+  });
+}

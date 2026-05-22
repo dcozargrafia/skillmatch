@@ -26,6 +26,7 @@ const NgoDeliverablesPage = lazy(() => import('../pages/ngo/NgoDeliverablesPage'
 const NgoProjectDetailPage = lazy(() => import('../pages/ngo/NgoProjectDetailPage'));
 const StudentApplicationsPage = lazy(() => import('../pages/student/StudentApplicationsPage'));
 const StudentAssignmentPage = lazy(() => import('../pages/student/StudentAssignmentPage'));
+const StudentHistoryPage = lazy(() => import('../pages/student/StudentHistoryPage'));
 const AdminDashboardPage = lazy(() => import('../pages/admin/AdminDashboardPage'));
 const ForgotPasswordPage = lazy(() => import('../pages/auth/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('../pages/auth/ResetPasswordPage'));
@@ -90,6 +91,7 @@ export function AppRoutes({
   NgoProjectDetail = NgoProjectDetailPage,
   StudentApplications = StudentApplicationsPage,
   StudentAssignment = StudentAssignmentPage,
+  StudentHistory = StudentHistoryPage,
   AdminDashboard = AdminDashboardPage,
   ForgotPassword = ForgotPasswordPage,
   ResetPassword = ResetPasswordPage,
@@ -117,6 +119,7 @@ export function AppRoutes({
         <Route path="projects/:id" element={<ProjectDetail />} />
         <Route path="applications" element={<StudentApplications />} />
         <Route path="assignments/:id" element={<StudentAssignment />} />
+        <Route path="history" element={<StudentHistory />} />
         <Route path="profile" element={<StudentProfile />} />
       </Route>
 

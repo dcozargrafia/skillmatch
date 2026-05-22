@@ -21,12 +21,20 @@ function StudentLayout() {
       <div className="app-shell">
         <nav className="app-sidebar">
           <NavLink
+            to="/student/profile"
+            className={({ isActive }) =>
+              `app-sidebar__link${isActive ? ' app-sidebar__link--active' : ''}`
+            }
+          >
+            Mi perfil
+          </NavLink>
+          <NavLink
             to="/student/projects"
             className={({ isActive }) =>
               `app-sidebar__link${isActive ? ' app-sidebar__link--active' : ''}`
             }
           >
-            Proyectos
+            Proyectos disponibles
           </NavLink>
           <NavLink
             to="/student/applications"
@@ -34,15 +42,15 @@ function StudentLayout() {
               `app-sidebar__link${isActive ? ' app-sidebar__link--active' : ''}`
             }
           >
-            Mis aplicaciones
+            Proyectos asignados
           </NavLink>
           <NavLink
-            to="/student/profile"
+            to="/student/history"
             className={({ isActive }) =>
               `app-sidebar__link${isActive ? ' app-sidebar__link--active' : ''}`
             }
           >
-            Mi perfil
+            Historial
           </NavLink>
         </nav>
         <main className="app-main">
