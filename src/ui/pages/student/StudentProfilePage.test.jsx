@@ -22,8 +22,8 @@ const mockProfile = {
   disponibilidad: true,
   portfolio_url: 'https://portfolio.dev',
   skills: [
-    { id: 's1', name: 'React', level: 'intermedio' },
-    { id: 's2', name: 'Node.js', level: 'avanzado' },
+    { skill_id: 's1', level: 'intermedio' },
+    { skill_id: 's2', level: 'avanzado' },
   ],
 };
 

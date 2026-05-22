@@ -20,9 +20,14 @@ function StudentProfilePage() {
     Promise.all([getStudentMe(), getAllSkills()])
       .then(([p, s]) => {
         setProfile(p);
-        setDisponibilidad(p.disponibilidad);
+        setDisponibilidad(p.disponibilidad ?? false);
         setPortfolioUrl(p.portfolio_url ?? '');
-        setSkills(p.skills ?? []);
+        setSkills(
+          (p.skills ?? []).map((ps) => {
+            const match = s.find((as) => as.id === ps.skill_id);
+            return { id: ps.skill_id, name: match?.name ?? ps.skill_id, level: ps.level };
+          })
+        );
         setAllSkills(s);
       })
       .catch(() => setLoadError('Error al cargar el perfil. Intenta de nuevo.'));
