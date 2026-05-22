@@ -146,4 +146,18 @@ describe('StudentApplicationsPage', () => {
     await screen.findByText('Campaña digital refugio');
     expect(screen.queryByText(/cargando/i)).not.toBeInTheDocument();
   });
+
+  it('AC11: incluye project_status rejected al consultar assignments para mantener recuperables', async () => {
+    getAssignmentsByStatus.mockResolvedValue([]);
+    renderPage();
+
+    await waitFor(() => {
+      expect(getAssignmentsByStatus).toHaveBeenCalledWith([
+        'assigned',
+        'in_progress',
+        'in_review',
+        'rejected',
+      ]);
+    });
+  });
 });

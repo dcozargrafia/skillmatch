@@ -20,10 +20,10 @@ function DeliverableItem({ deliverable, onStart, onSubmit }) {
         <div className="card__body"><p>{deliverable.description}</p></div>
       )}
 
-      {deliverable.status === 'pending' && (
+      {(deliverable.status === 'pending' || deliverable.status === 'rejected') && (
         <div className="card__footer">
           <button className="btn btn--secondary btn--sm" onClick={() => onStart(deliverable.id)}>
-            Iniciar
+            {deliverable.status === 'rejected' ? 'Reanudar' : 'Iniciar'}
           </button>
         </div>
       )}

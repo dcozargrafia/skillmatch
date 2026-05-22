@@ -92,7 +92,7 @@ function createRejectedResponse() {
 }
 
 beforeEach(() => {
-  vi.clearAllMocks();
+  vi.resetAllMocks();
 });
 
 // =============================================================================
@@ -300,10 +300,12 @@ describe('Review actions (Task 5)', () => {
     expect(screen.queryByRole('button', { name: /rechazar/i })).not.toBeInTheDocument();
   });
 
-  it('handleReview llama a reviewDeliverable y actualiza estado local', async () => {
+  it('handleReview aprueba y re-sincroniza proyecto/asignación/entregables', async () => {
     getProjectById.mockResolvedValue(mockProject({ status: 'in_review' }));
     getAssignmentsByProject.mockResolvedValue(mockAssignment);
-    getDeliverablesByAssignment.mockResolvedValue([mockDeliverable({ id: 'd1', status: 'in_review' })]);
+    getDeliverablesByAssignment
+      .mockResolvedValueOnce([mockDeliverable({ id: 'd1', status: 'in_review' })])
+      .mockResolvedValue([mockDeliverable({ id: 'd1', status: 'approved' })]);
     reviewDeliverable.mockResolvedValue({ id: 'd1', status: 'approved' });
     renderPage();
     await waitFor(() => {
@@ -312,6 +314,15 @@ describe('Review actions (Task 5)', () => {
     fireEvent.click(screen.getByRole('button', { name: /aprobar/i }));
     await waitFor(() => {
       expect(reviewDeliverable).toHaveBeenCalledWith('d1', { status: 'approved' });
+    });
+    await waitFor(() => {
+      expect(getProjectById).toHaveBeenCalledTimes(2);
+    });
+    await waitFor(() => {
+      expect(getAssignmentsByProject).toHaveBeenCalledTimes(2);
+    });
+    await waitFor(() => {
+      expect(getDeliverablesByAssignment).toHaveBeenCalledTimes(2);
     });
     await waitFor(() => {
       expect(screen.getByText('approved')).toBeInTheDocument();
@@ -332,6 +343,12 @@ describe('Review actions (Task 5)', () => {
     fireEvent.click(screen.getByRole('button', { name: /rechazar/i }));
     await waitFor(() => {
       expect(reviewDeliverable).toHaveBeenCalledWith('d1', { status: 'rejected' });
+    });
+    await waitFor(() => {
+      expect(getProjectById).toHaveBeenCalledTimes(2);
+    });
+    await waitFor(() => {
+      expect(getDeliverablesByAssignment).toHaveBeenCalledTimes(2);
     });
   });
 });
@@ -393,6 +410,69 @@ describe('Full integration scenarios (Task 6)', () => {
 });
 
 describe('NGO status and deliverable controls (Slice 2)', () => {
+  it('muestra acción explícita para completar proyecto cuando entregables están aprobados en revisión', async () => {
+    getProjectById.mockResolvedValue(mockProject({ status: 'in_review' }));
+    getAssignmentsByProject.mockResolvedValue(mockAssignment);
+    getDeliverablesByAssignment.mockResolvedValue([
+      mockDeliverable({ id: 'd1', status: 'approved' }),
+      mockDeliverable({ id: 'd2', status: 'approved' }),
+    ]);
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText('María García')).toBeInTheDocument();
+    });
+
+    expect(screen.getByRole('button', { name: /marcar como completado/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /iniciar proyecto/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /enviar a revisión/i })).not.toBeInTheDocument();
+  });
+
+  it('oculta acción de completar si no todos los entregables están aprobados', async () => {
+    getProjectById.mockResolvedValue(mockProject({ status: 'in_review' }));
+    getAssignmentsByProject.mockResolvedValue(mockAssignment);
+    getDeliverablesByAssignment.mockResolvedValue([
+      mockDeliverable({ id: 'd1', status: 'approved' }),
+      mockDeliverable({ id: 'd2', status: 'in_review' }),
+    ]);
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText('María García')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByRole('button', { name: /marcar como completado/i })).not.toBeInTheDocument();
+  });
+
+  it('marca proyecto como completado y re-sincroniza estado', async () => {
+    getProjectById
+      .mockResolvedValueOnce(mockProject({ status: 'in_review' }))
+      .mockResolvedValueOnce(mockProject({ status: 'completed' }));
+    getAssignmentsByProject.mockResolvedValue(mockAssignment);
+    getDeliverablesByAssignment.mockResolvedValue([mockDeliverable({ status: 'approved' })]);
+    updateProjectStatus.mockResolvedValue({});
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /marcar como completado/i })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /marcar como completado/i }));
+
+    await waitFor(() => {
+      expect(updateProjectStatus).toHaveBeenCalledWith('p1', 'completed');
+    });
+    await waitFor(() => {
+      expect(getProjectById).toHaveBeenCalledTimes(2);
+    });
+    await waitFor(() => {
+      expect(screen.getByText('completed')).toBeInTheDocument();
+    });
+  });
+
   it('muestra formulario de entregable cuando assignment existe y no hay entregable activo', async () => {
     getProjectById.mockResolvedValue(mockProject({ status: 'in_progress' }));
     getAssignmentsByProject.mockResolvedValue(mockAssignment);
@@ -434,28 +514,19 @@ describe('NGO status and deliverable controls (Slice 2)', () => {
     expect(screen.queryByRole('button', { name: /cancelar proyecto/i })).not.toBeInTheDocument();
   });
 
-  it('muestra acciones válidas por estado y ejecuta transición', async () => {
-    getProjectById
-      .mockResolvedValueOnce(mockProject({ status: 'assigned' }))
-      .mockResolvedValueOnce(mockProject({ status: 'in_progress' }));
+  it('oculta acciones de transición de proyecto en el header para NGO', async () => {
+    getProjectById.mockResolvedValue(mockProject({ status: 'assigned' }));
     getAssignmentsByProject.mockResolvedValue(mockAssignment);
     getDeliverablesByAssignment.mockResolvedValue([]);
-    updateProjectStatus.mockResolvedValue({});
 
     renderPage();
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /iniciar proyecto/i })).toBeInTheDocument();
+      expect(screen.getByText('Web banco de alimentos')).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole('button', { name: /iniciar proyecto/i }));
-
-    await waitFor(() => {
-      expect(updateProjectStatus).toHaveBeenCalledWith('p1', 'in_progress');
-    });
-    await waitFor(() => {
-      expect(getProjectById).toHaveBeenCalledTimes(2);
-    });
+    expect(screen.queryByRole('button', { name: /iniciar proyecto/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /enviar a revisión/i })).not.toBeInTheDocument();
   });
 
   it('pide confirmación para cancelar y cancela al confirmar', async () => {
@@ -523,28 +594,18 @@ describe('NGO status and deliverable controls (Slice 2)', () => {
     });
   });
 
-  it('muestra error claro y re-sync cuando transición falla con 400', async () => {
-    getProjectById
-      .mockResolvedValueOnce(mockProject({ status: 'assigned' }))
-      .mockResolvedValueOnce(mockProject({ status: 'assigned' }));
+  it('oculta acciones de transición de proyecto también en in_progress', async () => {
+    getProjectById.mockResolvedValue(mockProject({ status: 'in_progress' }));
     getAssignmentsByProject.mockResolvedValue(mockAssignment);
     getDeliverablesByAssignment.mockResolvedValue([]);
-    const error400 = new Error('Bad request');
-    error400.response = { status: 400 };
-    updateProjectStatus.mockRejectedValue(error400);
 
     renderPage();
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /iniciar proyecto/i })).toBeInTheDocument();
+      expect(screen.getByText('Web banco de alimentos')).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByRole('button', { name: /iniciar proyecto/i }));
 
-    await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent(/transición|estado|error/i);
-    });
-    await waitFor(() => {
-      expect(getProjectById).toHaveBeenCalledTimes(2);
-    });
+    expect(screen.queryByRole('button', { name: /iniciar proyecto/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /enviar a revisión/i })).not.toBeInTheDocument();
   });
 });
