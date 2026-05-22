@@ -12,8 +12,18 @@ vi.mock('../../../infrastructure/api/applicationApi.js', () => ({
   getApplicationsByProject: vi.fn(),
 }));
 
+vi.mock('../../../infrastructure/api/skillsApi.js', () => ({
+  getAllSkills: vi.fn(),
+}));
+
 import { getProjectById } from '../../../infrastructure/api/projectApi.js';
 import { createApplication } from '../../../infrastructure/api/applicationApi.js';
+import { getAllSkills } from '../../../infrastructure/api/skillsApi.js';
+
+const mockSkills = [
+  { id: 's1', name: 'React' },
+  { id: 's2', name: 'Node.js' },
+];
 
 const mockProject = {
   id: 'p1',
@@ -26,8 +36,8 @@ const mockProject = {
   status: 'pending',
   ngo: { name: 'Eco ONG' },
   skills: [
-    { id: 's1', name: 'React', required_level: 'intermedio' },
-    { id: 's2', name: 'Node.js', required_level: 'básico' },
+    { skill_id: 's1', required_level: 'intermediate' },
+    { skill_id: 's2', required_level: 'basic' },
   ],
 };
 
@@ -45,6 +55,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   getProjectById.mockResolvedValue(mockProject);
   createApplication.mockResolvedValue({ id: 'a1', status: 'pending' });
+  getAllSkills.mockResolvedValue(mockSkills);
 });
 
 describe('ProjectDetailPage', () => {
