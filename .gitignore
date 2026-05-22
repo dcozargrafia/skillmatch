@@ -62,6 +62,8 @@ CLAUDE.md
 AGENTS.md
 .atl/
 
+# Archivos de especificación SDD (OpenSpec) — solo local, no subir a remote
+openspec/
 
 # Archivos de coverage de tests
 coverage
