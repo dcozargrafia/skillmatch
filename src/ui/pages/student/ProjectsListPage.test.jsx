@@ -57,10 +57,10 @@ beforeEach(() => {
 });
 
 describe('ProjectsListPage', () => {
-  it('AC1: carga proyectos con status=pending por defecto al montar', async () => {
+  it('AC1: carga proyectos sin filtro de status al montar', async () => {
     renderPage();
     await waitFor(() =>
-      expect(getAllProjects).toHaveBeenCalledWith(expect.objectContaining({ status: 'pending' }))
+      expect(getAllProjects).toHaveBeenCalledWith(expect.not.objectContaining({ status: expect.anything() }))
     );
   });
 
@@ -75,18 +75,6 @@ describe('ProjectsListPage', () => {
     expect(screen.getAllByText('React').length).toBeGreaterThan(0);
   });
 
-  it('AC3a: filtrar por status llama getAllProjects con el nuevo status', async () => {
-    renderPage();
-    await screen.findByText('App de reciclaje');
-
-    const statusSelect = screen.getByRole('combobox', { name: /estado/i });
-    fireEvent.change(statusSelect, { target: { value: 'assigned' } });
-
-    await waitFor(() =>
-      expect(getAllProjects).toHaveBeenCalledWith(expect.objectContaining({ status: 'assigned' }))
-    );
-  });
-
   it('AC3b: filtrar por skill llama getAllProjects con skill_id', async () => {
     renderPage();
     await screen.findByText('App de reciclaje');
@@ -97,6 +85,14 @@ describe('ProjectsListPage', () => {
     await waitFor(() =>
       expect(getAllProjects).toHaveBeenCalledWith(expect.objectContaining({ skill_id: 's1' }))
     );
+  });
+
+  it('AC3c: no hay dropdown de estado en la toolbar', async () => {
+    renderPage();
+    await screen.findByText('App de reciclaje');
+    const selects = screen.queryAllByRole('combobox');
+    expect(selects.length).toBe(1);
+    expect(screen.queryByRole('combobox', { name: /estado/i })).not.toBeInTheDocument();
   });
 
   it('AC4: clic en una tarjeta navega al detalle del proyecto', async () => {

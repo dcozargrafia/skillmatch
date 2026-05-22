@@ -3,12 +3,9 @@ import { Link } from 'react-router-dom';
 import { getAllProjects } from '../../../infrastructure/api/projectApi.js';
 import { getAllSkills } from '../../../infrastructure/api/skillsApi.js';
 
-const STATUSES = ['pending', 'assigned', 'in_progress', 'in_review', 'rejected', 'completed', 'cancelled'];
-
 function ProjectsListPage() {
   const [projects, setProjects] = useState([]);
   const [skills, setSkills] = useState([]);
-  const [status, setStatus] = useState('pending');
   const [skillId, setSkillId] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -18,13 +15,13 @@ function ProjectsListPage() {
 
   useEffect(() => {
     setLoading(true);
-    const filters = { status };
+    const filters = {};
     if (skillId) filters.skill_id = skillId;
     getAllProjects(filters).then((data) => {
       setProjects(data);
       setLoading(false);
     });
-  }, [status, skillId]);
+  }, [skillId]);
 
   return (
     <div>
@@ -33,20 +30,6 @@ function ProjectsListPage() {
       </div>
 
       <div className="toolbar">
-        <div className="toolbar__group">
-          <label className="form-label">Estado</label>
-          <select
-            aria-label="Estado"
-            className="form-select"
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-          >
-            {STATUSES.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
-        </div>
-
         <div className="toolbar__group">
           <label className="form-label">Skill</label>
           <select

@@ -4,6 +4,7 @@ import {
   getMyAssignments,
   getAssignmentById,
   acceptAssignment,
+  getAssignmentsByStatus,
 } from './assignmentApi.js';
 
 vi.mock('./client.js', () => ({
@@ -42,5 +43,28 @@ describe('assignmentApi', () => {
   it('acceptAssignment llama a PUT /assignments/:id/accept', () => {
     acceptAssignment('assign-1');
     expect(put).toHaveBeenCalledWith('/assignments/assign-1/accept', {});
+  });
+
+  it('getAssignmentsByStatus filtra por project_status cuando se pasan statuses', async () => {
+    const mockAssignments = [
+      { id: 'a1', project_id: 'p1', status: 'active', project_status: 'in_progress' },
+      { id: 'a2', project_id: 'p2', status: 'active', project_status: 'completed' },
+      { id: 'a3', project_id: 'p3', status: 'active', project_status: 'cancelled' },
+      { id: 'a4', project_id: 'p4', status: 'active', project_status: 'in_progress' },
+    ];
+    get.mockResolvedValue(mockAssignments);
+    const result = await getAssignmentsByStatus(['completed', 'cancelled']);
+    expect(result).toHaveLength(2);
+    expect(result.map((a) => a.id)).toEqual(['a2', 'a3']);
+  });
+
+  it('getAssignmentsByStatus devuelve todos si statuses está vacío', async () => {
+    const mockAssignments = [
+      { id: 'a1', project_id: 'p1', status: 'active', project_status: 'in_progress' },
+      { id: 'a2', project_id: 'p2', status: 'active', project_status: 'completed' },
+    ];
+    get.mockResolvedValue(mockAssignments);
+    const result = await getAssignmentsByStatus([]);
+    expect(result).toHaveLength(2);
   });
 });
