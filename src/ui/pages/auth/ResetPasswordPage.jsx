@@ -1,6 +1,7 @@
 import { useSearchParams, Link } from 'react-router-dom';
 import useResetPassword from '../../hooks/useResetPassword.jsx';
 import { AlertBlock } from '../../components/AlertBlock.jsx';
+import { AuthCard } from '../../components/AuthCard.jsx';
 
 function ResetPasswordPage() {
   const {
@@ -17,31 +18,16 @@ function ResetPasswordPage() {
 
   if (isSuccess) {
     return (
-      <div className="auth-page">
-        <div className="auth-card">
-          <div className="auth-card__brand">
-            <span className="auth-card__logo">Skill<span>Match</span></span>
-          </div>
-          <h1 className="auth-card__title">Contraseña restablecida</h1>
-          <p className="auth-card__subtitle">
-            Tu contraseña ha sido cambiada correctamente.
-          </p>
+      <AuthCard title="Contraseña restablecida" subtitle="Tu contraseña ha sido cambiada correctamente.">
           <div className="auth-form__footer" style={{ marginTop: 'var(--space-5)', justifyContent: 'center' }}>
             <Link to="/login" className="auth-form__link">Volver al inicio de sesión</Link>
           </div>
-        </div>
-      </div>
+      </AuthCard>
     );
   }
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <div className="auth-card__brand">
-          <span className="auth-card__logo">Skill<span>Match</span></span>
-        </div>
-
-        <h1 className="auth-card__title">Restablecer contraseña</h1>
+    <AuthCard title="Restablecer contraseña">
 
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
           <div className="form-field">
@@ -85,8 +71,7 @@ function ResetPasswordPage() {
             {isLoading ? 'Restableciendo...' : 'Restablecer contraseña'}
           </button>
         </form>
-      </div>
-    </div>
+    </AuthCard>
   );
 }
 

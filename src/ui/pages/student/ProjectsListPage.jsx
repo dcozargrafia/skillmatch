@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import useStudentProjects from '../../hooks/useStudentProjects.jsx';
 import { PageHeader } from '../../components/PageHeader.jsx';
 import { EmptyState } from '../../components/EmptyState.jsx';
+import { StatusBadge } from '../../components/StatusBadge.jsx';
 
 function ProjectsListPage() {
   const {
@@ -49,7 +50,7 @@ function ProjectsListPage() {
                   <h2 className="card__title">{project.title}</h2>
                   <p className="card__subtitle">{project.ngo?.name}</p>
                 </div>
-                <span className="badge">{project.modality}</span>
+                <StatusBadge>{project.modality}</StatusBadge>
               </div>
               <div className="card__body">
                 <p>{project.description}</p>
@@ -64,7 +65,7 @@ function ProjectsListPage() {
               </div>
               <div className="card__footer">
                 <span className="font-mono text-sm text-muted">{project.deadline}</span>
-                <span className="badge">{project.status}</span>
+                <StatusBadge>{project.status}</StatusBadge>
               </div>
             </Link>
           ))}

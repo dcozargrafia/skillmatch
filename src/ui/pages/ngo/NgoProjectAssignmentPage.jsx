@@ -6,6 +6,7 @@ import { PageHeader } from '../../components/PageHeader.jsx';
 import { Section } from '../../components/Section.jsx';
 import { EmptyState } from '../../components/EmptyState.jsx';
 import { AlertBlock } from '../../components/AlertBlock.jsx';
+import { StatusBadge } from '../../components/StatusBadge.jsx';
 
 function NgoProjectAssignmentPage() {
   const { id } = useParams();
@@ -58,7 +59,7 @@ function NgoProjectAssignmentPage() {
               <h2 className="card__title">{assignment.student_name}</h2>
               <p className="card__subtitle">{assignment.student_email}</p>
             </div>
-            <span className="badge badge--accent">Asignado</span>
+            <StatusBadge variant="accent">Asignado</StatusBadge>
           </div>
           <div className="card__footer">
             <span className="text-muted text-sm font-mono">{assignment.start_date}</span>

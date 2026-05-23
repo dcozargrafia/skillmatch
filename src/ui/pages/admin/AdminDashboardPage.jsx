@@ -3,6 +3,7 @@ import { PageHeader } from '../../components/PageHeader.jsx';
 import { Section } from '../../components/Section.jsx';
 import { EmptyState } from '../../components/EmptyState.jsx';
 import { AlertBlock } from '../../components/AlertBlock.jsx';
+import { StatusBadge } from '../../components/StatusBadge.jsx';
 
 const CATEGORIES = ['Desarrollo', 'Diseno', 'CMS', 'Marketing'];
 
@@ -104,7 +105,7 @@ function AdminDashboardPage() {
             <div key={s.id} className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-3) var(--space-5)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
                 <span className="skill-tag">{s.name}</span>
-                <span className="badge">{s.category}</span>
+                <StatusBadge>{s.category}</StatusBadge>
               </div>
               <button className="btn btn--danger btn--sm" onClick={() => handleDeleteSkill(s.id)}>
                 Eliminar
