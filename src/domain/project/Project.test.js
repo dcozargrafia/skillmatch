@@ -5,6 +5,8 @@ import {
   isTerminalStatus,
   hasActiveDeliverable,
   getStatusLabel,
+  canCompleteProject,
+  canCreateDeliverable,
 } from './Project'
 
 describe('project domain helpers', () => {
@@ -96,6 +98,69 @@ describe('project domain helpers', () => {
     it('returns a label for known statuses and fallback for unknown statuses', () => {
       expect(getStatusLabel('in_review')).toBe('En revisión')
       expect(getStatusLabel('unknown')).toBe('unknown')
+    })
+  })
+
+  describe('canCompleteProject', () => {
+    it('returns true when status is in_review and all deliverables are approved', () => {
+      const project = { id: 1, status: 'in_review' }
+      const deliverables = [
+        { id: 1, status: 'approved' },
+        { id: 2, status: 'approved' },
+      ]
+      expect(canCompleteProject(project, deliverables)).toBe(true)
+    })
+
+    it('returns false when status is not in_review', () => {
+      const project = { id: 1, status: 'in_progress' }
+      const deliverables = [{ id: 1, status: 'approved' }]
+      expect(canCompleteProject(project, deliverables)).toBe(false)
+    })
+
+    it('returns false when any deliverable is not approved', () => {
+      const project = { id: 1, status: 'in_review' }
+      const deliverables = [
+        { id: 1, status: 'approved' },
+        { id: 2, status: 'in_progress' },
+      ]
+      expect(canCompleteProject(project, deliverables)).toBe(false)
+    })
+
+    it('returns false when deliverables array is empty', () => {
+      const project = { id: 1, status: 'in_review' }
+      expect(canCompleteProject(project, [])).toBe(false)
+    })
+  })
+
+  describe('canCreateDeliverable', () => {
+    it('returns true when project has assignment, is non-terminal, and no active deliverable', () => {
+      const project = { id: 1, assignment_id: 5, status: 'in_progress' }
+      const deliverables = [{ id: 1, status: 'approved' }]
+      expect(canCreateDeliverable(project, deliverables)).toBe(true)
+    })
+
+    it('returns false when project has no assignment', () => {
+      const project = { id: 1, assignment_id: null, status: 'in_progress' }
+      const deliverables = []
+      expect(canCreateDeliverable(project, deliverables)).toBe(false)
+    })
+
+    it('returns false when project status is terminal', () => {
+      const project = { id: 1, assignment_id: 5, status: 'completed' }
+      const deliverables = []
+      expect(canCreateDeliverable(project, deliverables)).toBe(false)
+    })
+
+    it('returns false when there is already an active deliverable', () => {
+      const project = { id: 1, assignment_id: 5, status: 'in_progress' }
+      const deliverables = [{ id: 1, status: 'pending' }]
+      expect(canCreateDeliverable(project, deliverables)).toBe(false)
+    })
+
+    it('returns false when there is an in_progress deliverable', () => {
+      const project = { id: 1, assignment_id: 5, status: 'in_progress' }
+      const deliverables = [{ id: 1, status: 'in_progress' }]
+      expect(canCreateDeliverable(project, deliverables)).toBe(false)
     })
   })
 })

@@ -43,3 +43,16 @@ export function hasActiveDeliverable(deliverables = []) {
 export function getStatusLabel(status) {
   return STATUS_LABELS[status] ?? status
 }
+
+export function canCompleteProject(project, deliverables = []) {
+  if (project.status !== 'in_review') return false
+  if (deliverables.length === 0) return false
+  return deliverables.every((d) => d.status === 'approved')
+}
+
+export function canCreateDeliverable(project, deliverables = []) {
+  if (!project.assignment_id) return false
+  if (isTerminalStatus(project.status)) return false
+  if (hasActiveDeliverable(deliverables)) return false
+  return true
+}
