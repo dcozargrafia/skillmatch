@@ -4,6 +4,7 @@ import useAuthStore from '../../hooks/useAuthStore';
 import { ROLE_HOME } from '../../router/AppRouter';
 import { isNetworkError } from '../../../domain/user/User.js';
 import { AlertBlock } from '../../components/AlertBlock.jsx';
+import { AuthCard } from '../../components/AuthCard.jsx';
 
 function LoginPage() {
   const user = useAuthStore((s) => s.user);
@@ -44,13 +45,7 @@ function LoginPage() {
   }
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <div className="auth-card__brand">
-          <span className="auth-card__logo">Skill<span>Match</span></span>
-        </div>
-
-        <h1 className="auth-card__title">Iniciar sesión</h1>
+    <AuthCard title="Iniciar sesión">
 
         {offline && (
           <AlertBlock variant="warning">
@@ -100,8 +95,7 @@ function LoginPage() {
             Crear cuenta
           </Link>
         </div>
-      </div>
-    </div>
+    </AuthCard>
   );
 }
 

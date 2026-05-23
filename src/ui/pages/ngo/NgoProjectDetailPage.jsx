@@ -15,6 +15,7 @@ import { PageHeader } from '../../components/PageHeader.jsx';
 import { Section } from '../../components/Section.jsx';
 import { EmptyState } from '../../components/EmptyState.jsx';
 import { AlertBlock } from '../../components/AlertBlock.jsx';
+import { StatusBadge } from '../../components/StatusBadge.jsx';
 
 const REVIEW_STATUSES = ['in_review'];
 
@@ -111,8 +112,8 @@ function NgoProjectDetailPage() {
               Cancelar proyecto
             </button>
           )}
-          <span className="badge">{project.modality}</span>
-          <span className="badge">{getStatusLabel(project.status)}</span>
+          <StatusBadge>{project.modality}</StatusBadge>
+          <StatusBadge>{getStatusLabel(project.status)}</StatusBadge>
         </div>
       </PageHeader>
 
@@ -157,7 +158,7 @@ function NgoProjectDetailPage() {
                 <h2 className="card__title">{assignment.student_name}</h2>
                 <p className="card__subtitle">{assignment.student_email}</p>
               </div>
-              <span className="badge badge--accent">Asignado</span>
+              <StatusBadge variant="accent">Asignado</StatusBadge>
             </div>
             {assignment.start_date && (
               <div className="card__footer">

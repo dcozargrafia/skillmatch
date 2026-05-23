@@ -8,6 +8,7 @@ import { PageHeader } from '../../components/PageHeader.jsx';
 import { getStatusLabel, getProjectStatusMessage, sortDeliverables } from '../../../domain/project/Project.js';
 import { Section } from '../../components/Section.jsx';
 import { AlertBlock } from '../../components/AlertBlock.jsx';
+import { StatusBadge } from '../../components/StatusBadge.jsx';
 
 function StudentAssignmentPage() {
   const { id } = useParams();
@@ -44,7 +45,7 @@ function StudentAssignmentPage() {
         title={assignment?.project_title}
         subtitle={<span className="font-mono">{assignment?.start_date}</span>}
       >
-        <span className="badge">{getStatusLabel(assignment?.project_status)}</span>
+        <StatusBadge>{getStatusLabel(assignment?.project_status)}</StatusBadge>
       </PageHeader>
 
       {assignment?.project_status === 'assigned' && (

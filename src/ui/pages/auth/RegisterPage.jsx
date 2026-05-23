@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { registerUseCase } from '../../../application/auth/registerUseCase.js';
 import { AlertBlock } from '../../components/AlertBlock.jsx';
+import { AuthCard } from '../../components/AuthCard.jsx';
 
 function RegisterPage() {
   const navigate = useNavigate();
@@ -46,13 +47,7 @@ function RegisterPage() {
   }
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <div className="auth-card__brand">
-          <span className="auth-card__logo">Skill<span>Match</span></span>
-        </div>
-
-        <h1 className="auth-card__title">Crear cuenta</h1>
+    <AuthCard title="Crear cuenta">
 
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
           <div className="form-field">
@@ -145,8 +140,7 @@ function RegisterPage() {
             ¿Ya tienes cuenta? Iniciar sesión
           </Link>
         </div>
-      </div>
-    </div>
+    </AuthCard>
   );
 }
 

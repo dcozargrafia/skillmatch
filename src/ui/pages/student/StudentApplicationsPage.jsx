@@ -4,6 +4,7 @@ import { DeliverableCard } from '../../components/DeliverableCard.jsx';
 import { PageHeader } from '../../components/PageHeader.jsx';
 import { EmptyState } from '../../components/EmptyState.jsx';
 import { getStatusLabel, getProjectStatusMessage, sortDeliverables } from '../../../domain/project/Project.js';
+import { StatusBadge } from '../../components/StatusBadge.jsx';
 
 function StudentApplicationsPage() {
   const navigate = useNavigate();
@@ -43,7 +44,7 @@ function StudentApplicationsPage() {
                 <div>
                   <h2 className="card__title">{assignment.project_title}</h2>
                 </div>
-                <span className="badge">{getStatusLabel(assignment.project_status)}</span>
+                <StatusBadge>{getStatusLabel(assignment.project_status)}</StatusBadge>
               </div>
               {statusMessage && (
                 <div className="card__body">

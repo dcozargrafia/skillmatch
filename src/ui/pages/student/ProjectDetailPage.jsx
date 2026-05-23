@@ -3,6 +3,7 @@ import useStudentProjectDetail from '../../hooks/useStudentProjectDetail.jsx';
 import { PageHeader } from '../../components/PageHeader.jsx';
 import { Section } from '../../components/Section.jsx';
 import { AlertBlock } from '../../components/AlertBlock.jsx';
+import { StatusBadge } from '../../components/StatusBadge.jsx';
 
 function ProjectDetailPage() {
   const { id } = useParams();
@@ -23,8 +24,8 @@ function ProjectDetailPage() {
     <div>
       <PageHeader title={project.title} subtitle={project.ngo?.name}>
         <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-          <span className="badge">{project.modality}</span>
-          <span className="badge">{project.status}</span>
+          <StatusBadge>{project.modality}</StatusBadge>
+          <StatusBadge>{project.status}</StatusBadge>
         </div>
       </PageHeader>
 

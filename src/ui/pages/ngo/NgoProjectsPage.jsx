@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import useNgoProjects from '../../hooks/useNgoProjects.jsx';
 import { PageHeader } from '../../components/PageHeader.jsx';
 import { EmptyState } from '../../components/EmptyState.jsx';
+import { StatusBadge } from '../../components/StatusBadge.jsx';
 
 function NgoProjectsPage() {
   const { projects, loading } = useNgoProjects();
@@ -29,10 +30,10 @@ function NgoProjectsPage() {
                   <h2 className="card__title">{p.title}</h2>
                   <p className="card__subtitle font-mono">{p.deadline}</p>
                 </div>
-                <span className="badge">{p.modality}</span>
+                <StatusBadge>{p.modality}</StatusBadge>
               </div>
               <div className="card__footer">
-                <span className="badge">{p.status}</span>
+                <StatusBadge>{p.status}</StatusBadge>
                 <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                   <Link to={`/ngo/projects/${p.id}`} className="btn btn--secondary btn--sm">
                     Ver detalle
