@@ -72,4 +72,22 @@ describe('createProjectUseCase', () => {
 
     await expect(createProjectUseCase(projectData)).rejects.toThrow('Server error');
   });
+
+  it('cuando payload incluye skills, los pasa a createProject sin cambios', async () => {
+    const projectData = {
+      title: 'Test Project',
+      description: 'Description',
+      max_students: 3,
+      skills: [{ skill_id: 's1', required_level: 'basic' }, { skill_id: 's2', required_level: 'advanced' }],
+    };
+    const mockCreatedProject = { id: 'p1', ...projectData, status: 'pending' };
+
+    validateProject.mockReturnValue({ values: projectData, errors: {} });
+    createProject.mockResolvedValue(mockCreatedProject);
+
+    const result = await createProjectUseCase(projectData);
+
+    expect(createProject).toHaveBeenCalledWith(projectData);
+    expect(result).toEqual(mockCreatedProject);
+  });
 });
