@@ -1,3 +1,13 @@
+/**
+ * Módulo de dominio: ONG.
+ *
+ * Validación de perfil de ONG y reglas de negocio que gobiernan
+ * qué acciones puede realizar una ONG sobre sus proyectos
+ * (editar, cancelar). Depende de Project.isTerminalStatus para
+ * determinar si un proyecto está en estado terminal.
+ *
+ * Sin dependencias de React, Axios ni infraestructura.
+ */
 import { isTerminalStatus } from '../project/Project.js'
 
 function isValidEmail(email) {

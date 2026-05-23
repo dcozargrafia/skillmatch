@@ -1,3 +1,16 @@
+/**
+ * Módulo de dominio: proyecto.
+ *
+ * Define la máquina de estados del ciclo de vida de un proyecto
+ * (pending → assigned → in_progress → in_review → completed/rejected/cancelled)
+ * y las reglas de negocio que gobiernan las transiciones.
+ *
+ * Los componentes de UI y los hooks consultan este módulo para
+ * determinar qué acciones están habilitadas (crear entregable,
+ * completar proyecto, etc.) sin duplicar lógica.
+ *
+ * Sin dependencias de React, Axios ni infraestructura.
+ */
 export const VALID_TRANSITIONS = {
   pending: ['assigned', 'cancelled'],
   assigned: ['in_progress', 'cancelled'],

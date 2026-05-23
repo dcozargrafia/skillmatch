@@ -1,3 +1,12 @@
+/**
+ * Módulo de dominio: habilidades.
+ *
+ * Normalización de niveles (básico↔basic, intermedio↔intermediate)
+ * y resolución de nombres de skills desde IDs. Las páginas y
+ * hooks delegan aquí la traducción para no duplicar lógica.
+ *
+ * Sin dependencias de React, Axios ni infraestructura.
+ */
 const SPANISH_LEVELS = {
   básico: 'basic',
   intermedio: 'intermediate',
