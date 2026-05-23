@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import useNgoProfile from '../../hooks/useNgoProfile.jsx';
+import { PageHeader } from '../../components/PageHeader.jsx';
 
 function NgoProfilePage() {
   const { profile, loading, error, successMessage, handleSave } = useNgoProfile();
@@ -32,13 +33,12 @@ function NgoProfilePage() {
 
   return (
     <div>
-      <div className="page-header">
-        <h1 className="page-title">Mi perfil</h1>
+      <PageHeader title="Mi perfil">
         {ngo.verified
           ? <span className="badge badge--success">ONG verificada</span>
           : <span className="badge badge--warning">Pendiente de verificación</span>
         }
-      </div>
+      </PageHeader>
 
       {!ngo.verified && (
         <div className="alert alert--warning" role="status" style={{ marginBottom: 'var(--space-6)' }}>

@@ -1,17 +1,17 @@
 import { Link } from 'react-router-dom';
 import useNgoProjects from '../../hooks/useNgoProjects.jsx';
+import { PageHeader } from '../../components/PageHeader.jsx';
 
 function NgoProjectsPage() {
   const { projects, loading } = useNgoProjects();
 
   return (
     <div>
-      <div className="page-header">
-        <h1 className="page-title">Mis proyectos</h1>
+      <PageHeader title="Mis proyectos">
         <Link to="/ngo/projects/new" className="btn btn--primary">
           Nuevo proyecto
         </Link>
-      </div>
+      </PageHeader>
 
       {loading && <p className="loading">Cargando...</p>}
 

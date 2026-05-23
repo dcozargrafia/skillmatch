@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import useStudentProjects from '../../hooks/useStudentProjects.jsx';
+import { PageHeader } from '../../components/PageHeader.jsx';
 
 function ProjectsListPage() {
   const {
@@ -13,9 +14,7 @@ function ProjectsListPage() {
 
   return (
     <div>
-      <div className="page-header">
-        <h1 className="page-title">Proyectos disponibles</h1>
-      </div>
+      <PageHeader title="Proyectos disponibles" />
 
       <div className="toolbar">
         <div className="toolbar__group">

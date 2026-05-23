@@ -1,4 +1,5 @@
 import useAdminDashboard from '../../hooks/useAdminDashboard.jsx';
+import { PageHeader } from '../../components/PageHeader.jsx';
 
 const CATEGORIES = ['Desarrollo', 'Diseno', 'CMS', 'Marketing'];
 
@@ -24,9 +25,7 @@ function AdminDashboardPage() {
   if (isLoading) {
     return (
       <div>
-        <div className="page-header">
-          <h1 className="page-title">Panel de administración</h1>
-        </div>
+        <PageHeader title="Panel de administración" />
         <div className="loading">Cargando...</div>
       </div>
     );
@@ -34,9 +33,7 @@ function AdminDashboardPage() {
 
   return (
     <div>
-      <div className="page-header">
-        <h1 className="page-title">Panel de administración</h1>
-      </div>
+      <PageHeader title="Panel de administración" />
 
       {error && (
         <div className="alert alert--error" role="alert" style={{ marginBottom: 'var(--space-4)' }}>

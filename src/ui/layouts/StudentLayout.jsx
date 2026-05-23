@@ -26,7 +26,7 @@ function StudentLayout() {
               `app-sidebar__link${isActive ? ' app-sidebar__link--active' : ''}`
             }
           >
-            Mi perfil
+              Perfil
           </NavLink>
           <NavLink
             to="/student/projects"

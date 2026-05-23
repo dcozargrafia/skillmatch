@@ -11,6 +11,7 @@ import {
   sortDeliverables,
 } from '../../../domain/project/Project.js';
 import { canCancelProject } from '../../../domain/ngo/Ngo.js';
+import { PageHeader } from '../../components/PageHeader.jsx';
 
 const REVIEW_STATUSES = ['in_review'];
 
@@ -89,11 +90,7 @@ function NgoProjectDetailPage() {
         </div>
       )}
 
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">{project.title}</h1>
-          <p className="page-subtitle">{project.description}</p>
-        </div>
+      <PageHeader title={project.title} subtitle={project.description}>
         <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
           {canCompleteProject(project, deliverables) && (
             <button
@@ -114,7 +111,7 @@ function NgoProjectDetailPage() {
           <span className="badge">{project.modality}</span>
           <span className="badge">{getStatusLabel(project.status)}</span>
         </div>
-      </div>
+      </PageHeader>
 
       <div className="card card--elevated" style={{ marginBottom: 'var(--space-6)' }}>
         <div className="card__body">

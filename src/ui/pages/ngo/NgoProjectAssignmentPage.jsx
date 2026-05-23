@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getApplicationsByProject } from '../../../infrastructure/api/applicationApi.js';
 import { getAssignmentsByProject, createAssignment } from '../../../infrastructure/api/assignmentApi.js';
+import { PageHeader } from '../../components/PageHeader.jsx';
 
 function NgoProjectAssignmentPage() {
   const { id } = useParams();
@@ -37,9 +38,7 @@ function NgoProjectAssignmentPage() {
 
   return (
     <div>
-      <div className="page-header">
-        <h1 className="page-title">Asignación del proyecto</h1>
-      </div>
+      <PageHeader title="Asignación del proyecto" />
 
       {errorMsg && (
         <div className="alert alert--error" role="alert" style={{ marginBottom: 'var(--space-5)' }}>

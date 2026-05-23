@@ -1,5 +1,6 @@
 import { useParams } from 'react-router-dom';
 import useStudentProjectDetail from '../../hooks/useStudentProjectDetail.jsx';
+import { PageHeader } from '../../components/PageHeader.jsx';
 
 function ProjectDetailPage() {
   const { id } = useParams();
@@ -18,16 +19,12 @@ function ProjectDetailPage() {
 
   return (
     <div>
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">{project.title}</h1>
-          <p className="page-subtitle">{project.ngo?.name}</p>
-        </div>
+      <PageHeader title={project.title} subtitle={project.ngo?.name}>
         <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
           <span className="badge">{project.modality}</span>
           <span className="badge">{project.status}</span>
         </div>
-      </div>
+      </PageHeader>
 
       <div className="card card--elevated" style={{ marginBottom: 'var(--space-6)' }}>
         <div className="card__body">

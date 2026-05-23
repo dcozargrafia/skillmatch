@@ -26,7 +26,7 @@ function NgoLayout() {
               `app-sidebar__link${isActive ? ' app-sidebar__link--active' : ''}`
             }
           >
-            Mis proyectos
+            Proyectos
           </NavLink>
           <NavLink
             to="/ngo/profile"
@@ -34,7 +34,7 @@ function NgoLayout() {
               `app-sidebar__link${isActive ? ' app-sidebar__link--active' : ''}`
             }
           >
-            Mi perfil
+              Perfil ONG
           </NavLink>
         </nav>
         <main className="app-main">

@@ -4,6 +4,7 @@ import useStudentAssignment from '../../hooks/useStudentAssignment.jsx';
 import useStudentCertificate from '../../hooks/useStudentCertificate.jsx';
 import useStudentReview from '../../hooks/useStudentReview.jsx';
 import { DeliverableCard } from '../../components/DeliverableCard.jsx';
+import { PageHeader } from '../../components/PageHeader.jsx';
 import { getStatusLabel, getProjectStatusMessage, sortDeliverables } from '../../../domain/project/Project.js';
 
 function StudentAssignmentPage() {
@@ -37,13 +38,12 @@ function StudentAssignmentPage() {
 
   return (
     <div>
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">{assignment?.project_title}</h1>
-          <p className="page-subtitle font-mono">{assignment?.start_date}</p>
-        </div>
+      <PageHeader
+        title={assignment?.project_title}
+        subtitle={<span className="font-mono">{assignment?.start_date}</span>}
+      >
         <span className="badge">{getStatusLabel(assignment?.project_status)}</span>
-      </div>
+      </PageHeader>
 
       {assignment?.project_status === 'assigned' && (
         <div style={{ marginBottom: 'var(--space-6)' }}>

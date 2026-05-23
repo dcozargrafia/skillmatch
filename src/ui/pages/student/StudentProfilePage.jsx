@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import useStudentProfile from '../../hooks/useStudentProfile.jsx';
+import { PageHeader } from '../../components/PageHeader.jsx';
 
 /** Opciones de nivel: valor en inglés (matching API) → label en español (display). */
 const LEVEL_OPTIONS = [
@@ -30,9 +31,7 @@ function StudentProfilePage() {
 
   return (
     <div>
-      <div className="page-header">
-        <h1 className="page-title">Mi perfil</h1>
-      </div>
+      <PageHeader title="Mi perfil" />
 
       <div className="card card--elevated section">
         <div className="card__header">

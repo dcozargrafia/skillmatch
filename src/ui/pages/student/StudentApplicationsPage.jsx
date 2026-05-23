@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import useStudentAssignments from '../../hooks/useStudentAssignments.jsx';
 import { DeliverableCard } from '../../components/DeliverableCard.jsx';
+import { PageHeader } from '../../components/PageHeader.jsx';
 import { getStatusLabel, getProjectStatusMessage, sortDeliverables } from '../../../domain/project/Project.js';
 
 function StudentApplicationsPage() {
@@ -21,9 +22,7 @@ function StudentApplicationsPage() {
   if (!assignments.length) {
     return (
       <div>
-        <div className="page-header">
-          <h1 className="page-title">Proyectos asignados</h1>
-        </div>
+        <PageHeader title="Proyectos asignados" />
         <div className="empty-state">
           <p className="empty-state__text">No tienes proyectos asignados todavía.</p>
         </div>
@@ -33,9 +32,7 @@ function StudentApplicationsPage() {
 
   return (
     <div>
-      <div className="page-header">
-        <h1 className="page-title">Proyectos asignados</h1>
-      </div>
+      <PageHeader title="Proyectos asignados" />
 
       <div className="item-list">
         {assignments.map((assignment) => {

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import useNgoProjectForm from '../../hooks/useNgoProjectForm.jsx';
 import { SkillSelector } from '../../components/SkillSelector.jsx';
+import { PageHeader } from '../../components/PageHeader.jsx';
 
 const MODALITIES = ['remoto', 'presencial', 'híbrido'];
 
@@ -57,9 +58,7 @@ function NgoProjectFormPage() {
 
   return (
     <div>
-      <div className="page-header">
-        <h1 className="page-title">{mode === 'edit' ? 'Editar proyecto' : 'Nuevo proyecto'}</h1>
-      </div>
+      <PageHeader title={mode === 'edit' ? 'Editar proyecto' : 'Nuevo proyecto'} />
 
       <div className="card card--elevated" style={{ maxWidth: '640px' }}>
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
