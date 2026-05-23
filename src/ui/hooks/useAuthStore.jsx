@@ -5,7 +5,7 @@
 
 import { create } from 'zustand';
 import { loginUseCase } from '../../application/auth/loginUseCase.js';
-import { getMeRequest } from '../../infrastructure/api/userApi.js';
+import { getMe } from '../../infrastructure/api/usersApi.js';
 import { logoutRequest } from '../../infrastructure/api/authApi.js';
 
 const useAuthStore = create((set) => ({
@@ -57,7 +57,7 @@ const useAuthStore = create((set) => ({
   hydrate: async () => {
     set({ isLoading: true });
     try {
-      const user = await getMeRequest();
+      const user = await getMe();
       set({ user, isLoading: false });
     } catch {
       set({ user: null, isLoading: false });

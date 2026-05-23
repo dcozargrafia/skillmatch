@@ -17,8 +17,8 @@ vi.mock('../../application/auth/loginUseCase.js', () => ({
   loginUseCase: vi.fn(),
 }));
 
-vi.mock('../../infrastructure/api/userApi.js', () => ({
-  getMeRequest: vi.fn(),
+vi.mock('../../infrastructure/api/usersApi.js', () => ({
+  getMe: vi.fn(),
 }));
 
 vi.mock('../../infrastructure/api/authApi.js', () => ({
@@ -28,7 +28,7 @@ vi.mock('../../infrastructure/api/authApi.js', () => ({
 }));
 
 const { loginUseCase } = await import('../../application/auth/loginUseCase.js');
-const { getMeRequest } = await import('../../infrastructure/api/userApi.js');
+const { getMe } = await import('../../infrastructure/api/usersApi.js');
 const { logoutRequest } = await import('../../infrastructure/api/authApi.js');
 const { default: useAuthStore } = await import('./useAuthStore.jsx');
 
@@ -112,7 +112,7 @@ describe('logout', () => {
 
 describe('hydrate', () => {
   it('restaura el usuario si la cookie JWT es válida', async () => {
-    getMeRequest.mockResolvedValue(mockUser);
+    getMe.mockResolvedValue(mockUser);
     const { result } = renderHook(() => useAuthStore());
 
     await act(async () => {
@@ -124,7 +124,7 @@ describe('hydrate', () => {
   });
 
   it('limpia el usuario silenciosamente si /users/me falla', async () => {
-    getMeRequest.mockRejectedValue(new Error('401'));
+    getMe.mockRejectedValue(new Error('401'));
     const { result } = renderHook(() => useAuthStore());
     useAuthStore.setState({ user: mockUser });
 

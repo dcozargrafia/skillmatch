@@ -6,7 +6,7 @@ vi.mock('./client.js', () => ({
   put: vi.fn(),
 }));
 
-import { getUserMe, updateUserMe } from './usersApi.js';
+import { getUserMe, updateUserMe, getMe } from './usersApi.js';
 
 beforeEach(() => vi.clearAllMocks());
 
@@ -23,5 +23,12 @@ describe('usersApi', () => {
     const result = await updateUserMe({ name: 'Ana Nueva', email: 'nueva@test.com' });
     expect(client.put).toHaveBeenCalledWith('/users/me', { name: 'Ana Nueva', email: 'nueva@test.com' });
     expect(result.name).toBe('Ana Nueva');
+  });
+
+  it('getMe llama a GET /users/me', async () => {
+    client.get.mockResolvedValue({ id: 'u1', name: 'Ana', email: 'ana@test.com' });
+    const result = await getMe();
+    expect(client.get).toHaveBeenCalledWith('/users/me');
+    expect(result.name).toBe('Ana');
   });
 });
