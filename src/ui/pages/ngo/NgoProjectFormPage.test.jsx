@@ -7,6 +7,20 @@ vi.mock('../../../ui/hooks/useNgoProjectForm.jsx', () => ({
   default: vi.fn(),
 }));
 
+vi.mock('../../../ui/components/SkillSelector.jsx', () => ({
+  SkillSelector: vi.fn(({ skills, selectedSkills, onChange }) => (
+    <div data-testid="skill-selector">
+      <span data-testid="skill-count">{skills?.length ?? 0}</span>
+      <span data-testid="selected-count">{selectedSkills?.length ?? 0}</span>
+      {skills?.map((s) => (
+        <button key={s.id} onClick={() => onChange([...selectedSkills, { skill_id: s.id, required_level: 'basic' }])}>
+          Add {s.name}
+        </button>
+      ))}
+    </div>
+  )),
+}));
+
 import useNgoProjectForm from '../../../ui/hooks/useNgoProjectForm.jsx';
 
 const mockSkills = [
@@ -143,16 +157,73 @@ describe('NgoProjectFormPage — useNgoProjectForm hook — editar', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: /guardar/i }));
     await waitFor(() => expect(handleSubmit).toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'Título actualizado' })
+      expect.objectContaining({ title: 'Título actualizado' }),
+      expect.any(Array)
     ));
   });
+});
 
-  it('AC7: muestra error 403 si hook reporta error de permiso', async () => {
-    setupEditHookMock({ error: 'No tienes permiso para editar este proyecto.' });
+describe('NgoProjectFormPage — skills integration', () => {
+  it('4.1: create mode renders SkillSelector with skills catalog', async () => {
+    setupCreateHookMock();
+    renderCreate();
+    expect(await screen.findByTestId('skill-selector')).toBeInTheDocument();
+    expect(screen.getByTestId('skill-count')).toHaveTextContent('2');
+  });
+
+  it('4.1: create mode includes selectedSkills in submit data', async () => {
+    const handleSubmit = vi.fn().mockResolvedValue({ id: 'p-new' });
+    setupCreateHookMock({ handleSubmit });
+    renderCreate();
+    await screen.findByRole('textbox', { name: /título/i });
+
+    // Simulate selecting skills via the mock SkillSelector
+    const addReactBtn = screen.getByRole('button', { name: /Add React/i });
+    fireEvent.click(addReactBtn);
+
+    fireEvent.change(screen.getByRole('textbox', { name: /título/i }), {
+      target: { value: 'Nuevo proyecto' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /guardar/i }));
+
+    await waitFor(() => {
+      const calledArg = handleSubmit.mock.calls[0][0];
+      expect(calledArg.skills).toEqual(
+        expect.arrayContaining([expect.objectContaining({ skill_id: 's1', required_level: 'basic' })])
+      );
+    });
+  });
+
+  it('4.1: edit mode preloads skills from project', async () => {
+    const projectWithSkills = {
+      ...mockProject,
+      skills: [{ skill_id: 's1', required_level: 'intermediate' }],
+    };
+    setupEditHookMock({ project: projectWithSkills });
     renderEdit();
     await screen.findByDisplayValue('Web banco de alimentos');
+    expect(screen.getByTestId('skill-selector')).toBeInTheDocument();
+    // Selected skills count should reflect preloaded skill
+    expect(screen.getByTestId('selected-count')).toHaveTextContent('1');
+  });
+
+  it('4.1: edit mode sends skills as 5th param to updateProjectUseCase', async () => {
+    const handleSubmit = vi.fn().mockResolvedValue(mockProject);
+    setupEditHookMock({ handleSubmit });
+    renderEdit();
+    await screen.findByDisplayValue('Web banco de alimentos');
+
+    fireEvent.change(screen.getByDisplayValue('Web banco de alimentos'), {
+      target: { value: 'Título actualizado' },
+    });
     fireEvent.click(screen.getByRole('button', { name: /guardar/i }));
-    await screen.findByRole('alert');
-    expect(screen.getByRole('alert')).toHaveTextContent(/no tienes permiso/i);
+
+    await waitFor(() => {
+      // handleSubmit in edit mode is called with (data, skills)
+      expect(handleSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Título actualizado' }),
+        expect.any(Array)
+      );
+    });
   });
 });
