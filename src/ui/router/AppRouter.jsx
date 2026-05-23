@@ -4,9 +4,10 @@
  * Las páginas se cargan con lazy loading para optimizar el bundle inicial.
  */
 
-import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { lazy, Suspense, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import useAuthStore from '../hooks/useAuthStore';
+import { setNavigate } from './navigator.js';
 
 // Páginas con lazy loading
 const LoginPage = lazy(() => import('../pages/auth/LoginPage'));
@@ -94,6 +95,9 @@ export function AppRoutes({
   ForgotPassword = ForgotPasswordPage,
   ResetPassword = ResetPasswordPage,
 } = {}) {
+  const navigate = useNavigate();
+  useEffect(() => { setNavigate(navigate); }, [navigate]);
+
   return (
     <Routes>
       {/* Rutas públicas */}

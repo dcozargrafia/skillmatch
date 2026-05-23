@@ -7,6 +7,7 @@ import { create } from 'zustand';
 import { loginUseCase } from '../../application/auth/loginUseCase.js';
 import { hydrateUseCase } from '../../application/auth/hydrateUseCase.js';
 import { logoutUseCase } from '../../application/auth/logoutUseCase.js';
+import { navigateTo } from '../router/navigator.js';
 
 const useAuthStore = create((set) => ({
   /** @type {{ id: number, name: string, email: string, role: string }|null} */
@@ -46,7 +47,7 @@ const useAuthStore = create((set) => ({
       // silencioso: el estado local se limpia igualmente
     }
     set({ user: null, isLoading: false });
-    window.location.href = '/login';
+    navigateTo('/login');
   },
 
   /**
