@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import useStudentProfile from '../../hooks/useStudentProfile.jsx';
 import { PageHeader } from '../../components/PageHeader.jsx';
+import { Section } from '../../components/Section.jsx';
 import { AlertBlock } from '../../components/AlertBlock.jsx';
 
 /** Opciones de nivel: valor en inglés (matching API) → label en español (display). */
@@ -50,11 +51,7 @@ function StudentProfilePage() {
         />
       </div>
 
-      <div className="section">
-        <div className="section__header">
-          <h2 className="section__title">Skills</h2>
-        </div>
-
+      <Section title="Skills">
         <div className="item-list" style={{ marginBottom: 'var(--space-5)' }}>
           {(profile.skills ?? []).map((ps) => {
             const match = allSkills.find((as) => as.id === ps.skill_id);
@@ -116,7 +113,7 @@ function StudentProfilePage() {
             </select>
           </div>
         </div>
-      </div>
+      </Section>
     </div>
   );
 }

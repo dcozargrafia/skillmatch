@@ -12,6 +12,7 @@ import {
 } from '../../../domain/project/Project.js';
 import { canCancelProject } from '../../../domain/ngo/Ngo.js';
 import { PageHeader } from '../../components/PageHeader.jsx';
+import { Section } from '../../components/Section.jsx';
 import { EmptyState } from '../../components/EmptyState.jsx';
 import { AlertBlock } from '../../components/AlertBlock.jsx';
 
@@ -128,10 +129,7 @@ function NgoProjectDetailPage() {
 
       {/* Candidate selection section — pending without assignment */}
       {showCandidateSection && (
-        <div className="section">
-          <div className="section__header">
-            <h2 className="section__title">Candidatos aprobados</h2>
-          </div>
+        <Section title="Candidatos aprobados">
           {applications.length === 0 && (
             <EmptyState message="No hay candidatos aprobados para este proyecto." />
           )}
@@ -147,7 +145,7 @@ function NgoProjectDetailPage() {
               ))}
             </div>
           )}
-        </div>
+        </Section>
       )}
 
       {/* Assignment + deliverables section */}
@@ -169,10 +167,7 @@ function NgoProjectDetailPage() {
           </div>
 
           {/* Deliverables */}
-          <div className="section">
-            <div className="section__header">
-              <h2 className="section__title">Entregables</h2>
-            </div>
+          <Section title="Entregables">
             {getProjectStatusMessage(project.status, deliverables) && (
               <div className="card__body" style={{ marginBottom: 'var(--space-4)' }}>
                 <p className="text-muted text-sm">{getProjectStatusMessage(project.status, deliverables)}</p>
@@ -230,7 +225,7 @@ function NgoProjectDetailPage() {
                 </div>
               </form>
             )}
-          </div>
+          </Section>
         </div>
       )}
     </div>

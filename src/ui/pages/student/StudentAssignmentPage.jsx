@@ -6,6 +6,7 @@ import useStudentReview from '../../hooks/useStudentReview.jsx';
 import { DeliverableCard } from '../../components/DeliverableCard.jsx';
 import { PageHeader } from '../../components/PageHeader.jsx';
 import { getStatusLabel, getProjectStatusMessage, sortDeliverables } from '../../../domain/project/Project.js';
+import { Section } from '../../components/Section.jsx';
 import { AlertBlock } from '../../components/AlertBlock.jsx';
 
 function StudentAssignmentPage() {
@@ -114,10 +115,7 @@ function StudentAssignmentPage() {
         </div>
       )}
 
-      <div className="section">
-        <div className="section__header">
-          <h2 className="section__title">Entregables</h2>
-        </div>
+      <Section title="Entregables">
         {(() => {
           const msg = getProjectStatusMessage(assignment?.project_status, deliverables);
           return msg ? (
@@ -140,7 +138,7 @@ function StudentAssignmentPage() {
             />
           ))}
         </div>
-      </div>
+      </Section>
     </div>
   );
 }

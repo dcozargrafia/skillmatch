@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { getApplicationsByProject } from '../../../infrastructure/api/applicationApi.js';
 import { getAssignmentsByProject, createAssignment } from '../../../infrastructure/api/assignmentApi.js';
 import { PageHeader } from '../../components/PageHeader.jsx';
+import { Section } from '../../components/Section.jsx';
 import { EmptyState } from '../../components/EmptyState.jsx';
 import { AlertBlock } from '../../components/AlertBlock.jsx';
 
@@ -70,10 +71,7 @@ function NgoProjectAssignmentPage() {
       )}
 
       {!loading && !assignment && approvedCandidates.length > 0 && (
-        <div className="section">
-          <div className="section__header">
-            <h2 className="section__title">Candidatos aprobados</h2>
-          </div>
+        <Section title="Candidatos aprobados">
           <div className="item-list">
             {approvedCandidates.map((app) => (
               <div key={app.id} className="card">
@@ -94,7 +92,7 @@ function NgoProjectAssignmentPage() {
               </div>
             ))}
           </div>
-        </div>
+        </Section>
       )}
     </div>
   );
