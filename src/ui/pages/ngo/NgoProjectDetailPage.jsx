@@ -12,6 +12,7 @@ import {
 } from '../../../domain/project/Project.js';
 import { canCancelProject } from '../../../domain/ngo/Ngo.js';
 import { PageHeader } from '../../components/PageHeader.jsx';
+import { EmptyState } from '../../components/EmptyState.jsx';
 
 const REVIEW_STATUSES = ['in_review'];
 
@@ -131,9 +132,7 @@ function NgoProjectDetailPage() {
             <h2 className="section__title">Candidatos aprobados</h2>
           </div>
           {applications.length === 0 && (
-            <div className="empty-state">
-              <p className="empty-state__text">No hay candidatos aprobados para este proyecto.</p>
-            </div>
+            <EmptyState message="No hay candidatos aprobados para este proyecto." />
           )}
           {applications.length > 0 && (
             <div className="item-list">
@@ -179,9 +178,7 @@ function NgoProjectDetailPage() {
               </div>
             )}
             {deliverables.length === 0 && (
-              <div className="empty-state">
-                <p className="empty-state__text">No hay entregables todavía.</p>
-              </div>
+              <EmptyState message="No hay entregables todavía." />
             )}
             {deliverables.length > 0 && (
               <div className="item-list">

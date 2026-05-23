@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import useNgoProjects from '../../hooks/useNgoProjects.jsx';
 import { PageHeader } from '../../components/PageHeader.jsx';
+import { EmptyState } from '../../components/EmptyState.jsx';
 
 function NgoProjectsPage() {
   const { projects, loading } = useNgoProjects();
@@ -16,9 +17,7 @@ function NgoProjectsPage() {
       {loading && <p className="loading">Cargando...</p>}
 
       {!loading && projects.length === 0 && (
-        <div className="empty-state">
-          <p className="empty-state__text">No tienes proyectos creados todavía.</p>
-        </div>
+        <EmptyState message="No tienes proyectos creados todavía." />
       )}
 
       {!loading && (

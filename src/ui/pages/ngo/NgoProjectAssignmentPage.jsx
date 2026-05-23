@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { getApplicationsByProject } from '../../../infrastructure/api/applicationApi.js';
 import { getAssignmentsByProject, createAssignment } from '../../../infrastructure/api/assignmentApi.js';
 import { PageHeader } from '../../components/PageHeader.jsx';
+import { EmptyState } from '../../components/EmptyState.jsx';
 
 function NgoProjectAssignmentPage() {
   const { id } = useParams();
@@ -64,9 +65,7 @@ function NgoProjectAssignmentPage() {
       )}
 
       {!loading && !assignment && approvedCandidates.length === 0 && (
-        <div className="empty-state">
-          <p className="empty-state__text">No hay candidatos aprobados para este proyecto.</p>
-        </div>
+        <EmptyState message="No hay candidatos aprobados para este proyecto." />
       )}
 
       {!loading && !assignment && approvedCandidates.length > 0 && (
