@@ -1,42 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { createProject, updateProject, getProjectById } from '../../../infrastructure/api/projectApi.js';
-import { getAllSkills } from '../../../infrastructure/api/skillsApi.js';
+import useNgoProjectForm from '../../hooks/useNgoProjectForm.jsx';
 
 const MODALITIES = ['remoto', 'presencial', 'híbrido'];
 
 function NgoProjectFormPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const isEdit = Boolean(id);
+  const { project, loading, error, mode, handleSubmit: onSubmit } = useNgoProjectForm(id);
 
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [objectives, setObjectives] = useState('');
-  const [estimatedHours, setEstimatedHours] = useState('');
-  const [deadline, setDeadline] = useState('');
-  const [modality, setModality] = useState(MODALITIES[0]);
-  const [allSkills, setAllSkills] = useState([]);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [title, setTitle] = useState(project?.title ?? '');
+  const [description, setDescription] = useState(project?.description ?? '');
+  const [objectives, setObjectives] = useState(project?.objectives ?? '');
+  const [estimatedHours, setEstimatedHours] = useState(project?.estimated_hours ?? '');
+  const [deadline, setDeadline] = useState(project?.deadline ?? '');
+  const [modality, setModality] = useState(project?.modality ?? MODALITIES[0]);
   const [titleError, setTitleError] = useState('');
-
-  useEffect(() => {
-    getAllSkills().then(setAllSkills);
-    if (isEdit) {
-      getProjectById(id).then((p) => {
-        setTitle(p.title ?? '');
-        setDescription(p.description ?? '');
-        setObjectives(p.objectives ?? '');
-        setEstimatedHours(p.estimated_hours ?? '');
-        setDeadline(p.deadline ?? '');
-        setModality(p.modality ?? MODALITIES[0]);
-      });
-    }
-  }, [id, isEdit]);
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setErrorMsg('');
     setTitleError('');
 
     if (!title.trim()) {
@@ -53,27 +35,18 @@ function NgoProjectFormPage() {
       modality,
     };
 
-    try {
-      if (isEdit) {
-        await updateProject(id, data);
-        navigate(`/ngo/projects/${id}`);
-      } else {
-        const created = await createProject(data);
-        navigate(`/ngo/projects/${created.id}`);
-      }
-    } catch (err) {
-      if (err?.response?.status === 403) {
-        setErrorMsg('No tienes permiso para editar este proyecto.');
-      } else {
-        setErrorMsg('Error al guardar el proyecto. Intenta de nuevo.');
-      }
+    const result = await onSubmit(data);
+    if (result) {
+      navigate(`/ngo/projects/${result.id}`);
     }
   }
+
+  if (loading) return <p className="loading">Cargando...</p>;
 
   return (
     <div>
       <div className="page-header">
-        <h1 className="page-title">{isEdit ? 'Editar proyecto' : 'Nuevo proyecto'}</h1>
+        <h1 className="page-title">{mode === 'edit' ? 'Editar proyecto' : 'Nuevo proyecto'}</h1>
       </div>
 
       <div className="card card--elevated" style={{ maxWidth: '640px' }}>
@@ -148,8 +121,8 @@ function NgoProjectFormPage() {
             </select>
           </div>
 
-          {errorMsg && (
-            <div className="alert alert--error" role="alert">{errorMsg}</div>
+          {error && (
+            <div className="alert alert--error" role="alert">{error}</div>
           )}
 
           <button type="submit" className="btn btn--primary">Guardar</button>

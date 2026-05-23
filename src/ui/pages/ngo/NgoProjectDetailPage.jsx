@@ -1,23 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import {
-  getProjectById,
-  updateProjectStatus,
-  cancelProject,
-} from '../../../infrastructure/api/projectApi.js';
-import { getAssignmentsByProject, createAssignment } from '../../../infrastructure/api/assignmentApi.js';
-import { getApplicationsByProject } from '../../../infrastructure/api/applicationApi.js';
-import {
-  createDeliverable,
-  getDeliverablesByAssignment,
-  reviewDeliverable,
-} from '../../../infrastructure/api/deliverableApi.js';
+import useProjectDetail from '../../hooks/useProjectDetail.jsx';
 import {
   hasActiveDeliverable,
   isTerminalStatus,
+  canCompleteProject,
 } from '../../../domain/project/Project.js';
+import { canCancelProject } from '../../../domain/ngo/Ngo.js';
 
 const REVIEW_STATUSES = ['in_review'];
+
 function DeliverableCard({ deliverable, onReview, readOnly }) {
   const badgeClass =
     deliverable.status === 'approved'
@@ -88,235 +80,51 @@ function CandidateCard({ application, onSelect, selecting }) {
 
 function NgoProjectDetailPage() {
   const { id } = useParams();
-  const [project, setProject] = useState(null);
-  const [assignment, setAssignment] = useState(null);
-  const [deliverables, setDeliverables] = useState([]);
-  const [applications, setApplications] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingAssignment, setLoadingAssignment] = useState(false);
-  const [loadingDeliverables, setLoadingDeliverables] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
-  const [selectingId, setSelectingId] = useState(null);
+  const { project, assignment, deliverables, applications, loading, error, actions } = useProjectDetail(id);
+
   const [deliverableTitle, setDeliverableTitle] = useState('');
   const [deliverableDescription, setDeliverableDescription] = useState('');
-  const [submittingDeliverable, setSubmittingDeliverable] = useState(false);
-  const [mutatingStatus, setMutatingStatus] = useState(false);
 
   const isTerminal = project ? isTerminalStatus(project.status) : false;
+  const readOnly = isTerminal;
 
-  async function loadAssignment(projId) {
-    setLoadingAssignment(true);
-    try {
-      const asgn = await getAssignmentsByProject(projId);
-      setAssignment(asgn ?? null);
-      if (asgn?.id) {
-        loadDeliverables(asgn.id);
-      }
-    } catch (err) {
-      if (err?.response?.status === 404) {
-        setAssignment(null);
-      } else {
-        setErrorMsg('Error al cargar la asignación.');
-      }
-    } finally {
-      setLoadingAssignment(false);
-    }
-  }
-
-  async function loadDeliverables(asgnId) {
-    setLoadingDeliverables(true);
-    try {
-      const data = await getDeliverablesByAssignment(asgnId);
-      setDeliverables(data ?? []);
-    } catch {
-      setDeliverables([]);
-    } finally {
-      setLoadingDeliverables(false);
-    }
-  }
-
-  async function syncProjectState() {
-    const [proj, asgn] = await Promise.all([getProjectById(id), getAssignmentsByProject(id)]);
-    setProject(proj);
-    setAssignment(asgn ?? null);
-
-    if (asgn?.id) {
-      await loadDeliverables(asgn.id);
-    } else {
-      setDeliverables([]);
-    }
-
-    if (proj.status === 'pending') {
-      await loadApplications(id);
-    } else {
-      setApplications([]);
-    }
-  }
-
-  async function runMutationWithResync(mutationFn, fallbackMessage, forbiddenMessage = null) {
-    setErrorMsg('');
-
-    try {
-      await mutationFn();
-      await syncProjectState();
-      return true;
-    } catch (err) {
-      if (err?.response?.status === 403) {
-        setErrorMsg(forbiddenMessage ?? 'No tienes permiso para realizar esta acción.');
-      } else if (err?.response?.status === 400) {
-        setErrorMsg('No se pudo completar la transición de estado solicitada.');
-      } else {
-        setErrorMsg(fallbackMessage);
-      }
-
-      try {
-        await syncProjectState();
-      } catch {
-        // noop: preserve original mutation error message
-      }
-
-      return false;
-    }
-  }
-
-  async function loadApplications(projId) {
-    try {
-      const apps = await getApplicationsByProject(projId);
-      setApplications(apps ?? []);
-    } catch {
-      setApplications([]);
-    }
-  }
-
-  useEffect(() => {
-    if (!id) return;
-    setLoading(true);
-    setErrorMsg('');
-    setProject(null);
-    setAssignment(null);
-    setDeliverables([]);
-    setApplications([]);
-
-    getProjectById(id)
-      .then((proj) => {
-        setProject(proj);
-        setLoading(false);
-        // Sequential: after project loads, load assignment
-        loadAssignment(id);
-        // Also load applications for pending state
-        if (proj.status === 'pending') {
-          loadApplications(id);
-        }
-      })
-      .catch(() => {
-        setErrorMsg('Error al cargar el proyecto.');
-        setLoading(false);
-      });
-  }, [id]);
-
-  async function handleSelectCandidate(applicationId) {
-    setErrorMsg('');
-    setSelectingId(applicationId);
-    try {
-      await createAssignment(applicationId);
-      const [proj, asgn] = await Promise.all([getProjectById(id), getAssignmentsByProject(id)]);
-      setProject(proj);
-      setAssignment(asgn ?? null);
-      if (asgn?.id) {
-        loadDeliverables(asgn.id);
-      }
-      setApplications([]);
-    } catch (err) {
-      if (err?.response?.status === 403) {
-        setErrorMsg('No tienes permiso para realizar esta acción.');
-      } else {
-        setErrorMsg('Error al seleccionar el candidato. Intenta de nuevo.');
-      }
-    } finally {
-      setSelectingId(null);
-    }
-  }
-
-  async function handleReview(deliverableId, status) {
-    await runMutationWithResync(
-      () => reviewDeliverable(deliverableId, { status }),
-      'Error al revisar el entregable. Intenta de nuevo.'
-    );
-  }
-
-  async function handleCreateDeliverable(event) {
-    event.preventDefault();
-    if (!assignment?.id || !deliverableTitle.trim()) return;
-
-    setSubmittingDeliverable(true);
-
-    const created = await runMutationWithResync(
-      () =>
-        createDeliverable({
-          assignment_id: assignment.id,
-          title: deliverableTitle.trim(),
-          description: deliverableDescription.trim(),
-        }),
-      'Error al crear el entregable. Intenta de nuevo.',
-      'No tienes permiso para crear entregables.',
-    );
-
-    if (created) {
-      setDeliverableTitle('');
-      setDeliverableDescription('');
-    }
-
-    setSubmittingDeliverable(false);
-  }
-
-  async function handleCancelProject() {
-    if (!window.confirm('¿Seguro que querés cancelar este proyecto?')) return;
-
-    setMutatingStatus(true);
-    await runMutationWithResync(
-      () => cancelProject(id),
-      'Error al cancelar el proyecto. Intenta de nuevo.',
-    );
-    setMutatingStatus(false);
-  }
-
-  async function handleMarkCompleted() {
-    setMutatingStatus(true);
-    await runMutationWithResync(
-      () => updateProjectStatus(id, 'completed'),
-      'Error al marcar el proyecto como completado. Intenta de nuevo.',
-    );
-    setMutatingStatus(false);
-  }
+  const showCandidateSection = project?.status === 'pending' && !assignment;
+  const showAssignmentSection = !!assignment;
+  const showDeliverableForm =
+    showAssignmentSection && !isTerminal && !hasActiveDeliverable(deliverables);
 
   if (loading) return <p className="loading">Cargando...</p>;
 
-  if (errorMsg && !project) {
+  if (error && !project) {
     return (
       <div className="alert alert--error" role="alert">
-        {errorMsg}
+        {error}
       </div>
     );
   }
 
   if (!project) return null;
 
-  const showCandidateSection = project.status === 'pending' && !assignment;
-  const showAssignmentSection = !!assignment;
-  const readOnly = isTerminal;
-  const showDeliverableForm =
-    showAssignmentSection && !isTerminal && !hasActiveDeliverable(deliverables);
-  const canMarkProjectAsCompleted =
-    showAssignmentSection &&
-    project.status === 'in_review' &&
-    deliverables.length > 0 &&
-    deliverables.every((deliverable) => deliverable.status === 'approved');
+  async function handleCreateDeliverable(event) {
+    event.preventDefault();
+    if (!deliverableTitle.trim()) return;
+
+    const created = await actions.handleCreateDeliverable({
+      title: deliverableTitle.trim(),
+      description: deliverableDescription.trim(),
+    });
+
+    if (created) {
+      setDeliverableTitle('');
+      setDeliverableDescription('');
+    }
+  }
 
   return (
     <div>
-      {errorMsg && (
+      {error && (
         <div className="alert alert--error" role="alert" style={{ marginBottom: 'var(--space-5)' }}>
-          {errorMsg}
+          {error}
         </div>
       )}
 
@@ -326,20 +134,18 @@ function NgoProjectDetailPage() {
           <p className="page-subtitle">{project.description}</p>
         </div>
         <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-          {canMarkProjectAsCompleted && (
+          {canCompleteProject(project, deliverables) && (
             <button
               className="btn btn--primary btn--sm"
-              disabled={mutatingStatus}
-              onClick={handleMarkCompleted}
+              onClick={actions.handleMarkCompleted}
             >
               Marcar como completado
             </button>
           )}
-          {!isTerminal && (
+          {canCancelProject(project.status) && (
             <button
               className="btn btn--danger btn--sm"
-              disabled={mutatingStatus}
-              onClick={handleCancelProject}
+              onClick={actions.handleCancelProject}
             >
               Cancelar proyecto
             </button>
@@ -366,20 +172,19 @@ function NgoProjectDetailPage() {
           <div className="section__header">
             <h2 className="section__title">Candidatos aprobados</h2>
           </div>
-          {loadingAssignment && <p className="loading">Cargando candidatos...</p>}
-          {!loadingAssignment && applications.length === 0 && (
+          {applications.length === 0 && (
             <div className="empty-state">
               <p className="empty-state__text">No hay candidatos aprobados para este proyecto.</p>
             </div>
           )}
-          {!loadingAssignment && applications.length > 0 && (
+          {applications.length > 0 && (
             <div className="item-list">
               {applications.map((app) => (
                 <CandidateCard
                   key={app.id}
                   application={app}
-                  onSelect={handleSelectCandidate}
-                  selecting={selectingId === app.id}
+                  onSelect={actions.handleSelectCandidate}
+                  selecting={false}
                 />
               ))}
             </div>
@@ -410,26 +215,25 @@ function NgoProjectDetailPage() {
             <div className="section__header">
               <h2 className="section__title">Entregables</h2>
             </div>
-            {loadingDeliverables && <p className="loading">Cargando entregables...</p>}
-            {!loadingDeliverables && deliverables.length === 0 && (
+            {deliverables.length === 0 && (
               <div className="empty-state">
                 <p className="empty-state__text">No hay entregables todavía.</p>
               </div>
             )}
-            {!loadingDeliverables && deliverables.length > 0 && (
+            {deliverables.length > 0 && (
               <div className="item-list">
                 {deliverables.map((d) => (
                   <DeliverableCard
                     key={d.id}
                     deliverable={d}
-                    onReview={handleReview}
+                    onReview={actions.handleReview}
                     readOnly={readOnly}
                   />
                 ))}
               </div>
             )}
 
-            {!loadingDeliverables && showDeliverableForm && (
+            {showDeliverableForm && (
               <form className="card" onSubmit={handleCreateDeliverable} style={{ marginTop: 'var(--space-4)' }}>
                 <div className="card__header">
                   <h3 className="card__title">Nuevo entregable</h3>
@@ -457,8 +261,8 @@ function NgoProjectDetailPage() {
                   </div>
                 </div>
                 <div className="card__footer">
-                  <button className="btn btn--primary btn--sm" type="submit" disabled={submittingDeliverable}>
-                    {submittingDeliverable ? 'Creando...' : 'Crear entregable'}
+                  <button className="btn btn--primary btn--sm" type="submit">
+                    Crear entregable
                   </button>
                 </div>
               </form>

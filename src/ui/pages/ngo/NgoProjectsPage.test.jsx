@@ -3,16 +3,27 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import NgoProjectsPage from './NgoProjectsPage';
 
-vi.mock('../../../infrastructure/api/projectApi.js', () => ({
-  getOwnProjects: vi.fn(),
+vi.mock('../../../ui/hooks/useNgoProjects.jsx', () => ({
+  default: vi.fn(),
 }));
 
-import { getOwnProjects } from '../../../infrastructure/api/projectApi.js';
+import useNgoProjects from '../../../ui/hooks/useNgoProjects.jsx';
 
 const mockProjects = [
   { id: 'p1', title: 'Web banco de alimentos', status: 'in_review', modality: 'remoto', deadline: '2026-09-30' },
   { id: 'p2', title: 'Campaña digital refugio', status: 'pending', modality: 'híbrido', deadline: '2026-08-15' },
 ];
+
+function setupHookMock(overrides = {}) {
+  const defaults = {
+    projects: [],
+    loading: true,
+    error: null,
+    refresh: vi.fn(),
+    ...overrides,
+  };
+  useNgoProjects.mockReturnValue(defaults);
+}
 
 function renderPage() {
   return render(
@@ -28,15 +39,20 @@ function renderPage() {
 }
 
 beforeEach(() => {
-  vi.clearAllMocks();
-  getOwnProjects.mockResolvedValue(mockProjects);
+  vi.resetAllMocks();
+  setupHookMock({ projects: mockProjects, loading: false });
 });
 
-describe('NgoProjectsPage', () => {
-  it('carga proyectos propios desde getOwnProjects al montar', async () => {
+describe('NgoProjectsPage — useNgoProjects hook integration', () => {
+  it('muestra loading cuando el hook está cargando', () => {
+    setupHookMock({ loading: true, projects: [] });
     renderPage();
-    await waitFor(() => expect(getOwnProjects).toHaveBeenCalledTimes(1));
-    expect(await screen.findByText('Web banco de alimentos')).toBeInTheDocument();
+    expect(screen.getByText(/cargando/i)).toBeInTheDocument();
+  });
+
+  it('carga proyectos desde el hook', async () => {
+    renderPage();
+    await waitFor(() => expect(screen.getByText('Web banco de alimentos')).toBeInTheDocument());
   });
 
   it('muestra título, estado, modalidad y deadline de cada proyecto', async () => {
@@ -48,7 +64,7 @@ describe('NgoProjectsPage', () => {
   });
 
   it('muestra estado vacío si no hay proyectos', async () => {
-    getOwnProjects.mockResolvedValue([]);
+    setupHookMock({ loading: false, projects: [] });
     renderPage();
     await screen.findByText(/no tienes proyectos/i);
   });
@@ -82,7 +98,7 @@ describe('NgoProjectsPage', () => {
   });
 
   it('estado vacío no muestra enlace a detalle', async () => {
-    getOwnProjects.mockResolvedValue([]);
+    setupHookMock({ loading: false, projects: [] });
     renderPage();
     await screen.findByText(/no tienes proyectos/i);
     expect(screen.queryByRole('link', { name: /ver detalle/i })).not.toBeInTheDocument();

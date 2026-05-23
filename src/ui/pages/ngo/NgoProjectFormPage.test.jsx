@@ -3,18 +3,11 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import NgoProjectFormPage from './NgoProjectFormPage';
 
-vi.mock('../../../infrastructure/api/projectApi.js', () => ({
-  createProject: vi.fn(),
-  updateProject: vi.fn(),
-  getProjectById: vi.fn(),
+vi.mock('../../../ui/hooks/useNgoProjectForm.jsx', () => ({
+  default: vi.fn(),
 }));
 
-vi.mock('../../../infrastructure/api/skillsApi.js', () => ({
-  getAllSkills: vi.fn(),
-}));
-
-import { createProject, updateProject, getProjectById } from '../../../infrastructure/api/projectApi.js';
-import { getAllSkills } from '../../../infrastructure/api/skillsApi.js';
+import useNgoProjectForm from '../../../ui/hooks/useNgoProjectForm.jsx';
 
 const mockSkills = [
   { id: 's1', name: 'React' },
@@ -31,6 +24,32 @@ const mockProject = {
   modality: 'remoto',
   skills: [{ id: 's1', name: 'React', required_level: 'intermediate' }],
 };
+
+function setupCreateHookMock(overrides = {}) {
+  const defaults = {
+    project: null,
+    skills: mockSkills,
+    loading: false,
+    error: null,
+    mode: 'create',
+    handleSubmit: vi.fn(),
+    ...overrides,
+  };
+  useNgoProjectForm.mockReturnValue(defaults);
+}
+
+function setupEditHookMock(overrides = {}) {
+  const defaults = {
+    project: mockProject,
+    skills: mockSkills,
+    loading: false,
+    error: null,
+    mode: 'edit',
+    handleSubmit: vi.fn(),
+    ...overrides,
+  };
+  useNgoProjectForm.mockReturnValue(defaults);
+}
 
 function renderCreate() {
   return render(
@@ -55,15 +74,12 @@ function renderEdit() {
 }
 
 beforeEach(() => {
-  vi.clearAllMocks();
-  getAllSkills.mockResolvedValue(mockSkills);
-  createProject.mockResolvedValue({ id: 'p-new', title: 'Web banco de alimentos' });
-  updateProject.mockResolvedValue(mockProject);
-  getProjectById.mockResolvedValue(mockProject);
+  vi.resetAllMocks();
 });
 
-describe('NgoProjectFormPage — crear', () => {
+describe('NgoProjectFormPage — useNgoProjectForm hook — crear', () => {
   it('AC1: muestra formulario con campos title, description, objectives, estimated_hours, deadline, modality', async () => {
+    setupCreateHookMock();
     renderCreate();
     await screen.findByRole('textbox', { name: /título/i });
     expect(screen.getByRole('textbox', { name: /descripción/i })).toBeInTheDocument();
@@ -74,72 +90,68 @@ describe('NgoProjectFormPage — crear', () => {
   });
 
   it('AC2: bloquea el submit si el título está vacío (validación cliente)', async () => {
+    const handleSubmit = vi.fn();
+    setupCreateHookMock({ handleSubmit });
     renderCreate();
     await screen.findByRole('textbox', { name: /título/i });
     fireEvent.click(screen.getByRole('button', { name: /guardar/i }));
-    expect(createProject).not.toHaveBeenCalled();
+    expect(handleSubmit).not.toHaveBeenCalled();
   });
 
   it('AC3: crea el proyecto y redirige al detalle', async () => {
+    const handleSubmit = vi.fn().mockResolvedValue({ id: 'p-new' });
+    setupCreateHookMock({ handleSubmit });
     renderCreate();
     await screen.findByRole('textbox', { name: /título/i });
-
     fireEvent.change(screen.getByRole('textbox', { name: /título/i }), {
       target: { value: 'Nuevo proyecto' },
     });
     fireEvent.click(screen.getByRole('button', { name: /guardar/i }));
-
-    await waitFor(() => expect(createProject).toHaveBeenCalledWith(
+    await waitFor(() => expect(handleSubmit).toHaveBeenCalledWith(
       expect.objectContaining({ title: 'Nuevo proyecto' })
     ));
     await screen.findByText('DetalleProyecto');
   });
 
-  it('AC4: muestra error si createProject falla', async () => {
-    createProject.mockRejectedValueOnce(new Error('Error servidor'));
+  it('AC4: muestra error si hook reporta error', async () => {
+    setupCreateHookMock({ error: 'Error servidor' });
     renderCreate();
     await screen.findByRole('textbox', { name: /título/i });
-
     fireEvent.change(screen.getByRole('textbox', { name: /título/i }), {
       target: { value: 'Proyecto' },
     });
     fireEvent.click(screen.getByRole('button', { name: /guardar/i }));
-
     await screen.findByRole('alert');
   });
 });
 
-describe('NgoProjectFormPage — editar', () => {
+describe('NgoProjectFormPage — useNgoProjectForm hook — editar', () => {
   it('AC5: carga los datos del proyecto existente en el formulario', async () => {
+    setupEditHookMock();
     renderEdit();
     expect(await screen.findByDisplayValue('Web banco de alimentos')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Descripción del proyecto')).toBeInTheDocument();
   });
 
-  it('AC6: actualiza el proyecto con updateProject y muestra los cambios', async () => {
+  it('AC6: actualiza el proyecto con handleSubmit y muestra los cambios', async () => {
+    const handleSubmit = vi.fn().mockResolvedValue(mockProject);
+    setupEditHookMock({ handleSubmit });
     renderEdit();
     await screen.findByDisplayValue('Web banco de alimentos');
-
     fireEvent.change(screen.getByDisplayValue('Web banco de alimentos'), {
       target: { value: 'Título actualizado' },
     });
     fireEvent.click(screen.getByRole('button', { name: /guardar/i }));
-
-    await waitFor(() => expect(updateProject).toHaveBeenCalledWith(
-      'p1',
+    await waitFor(() => expect(handleSubmit).toHaveBeenCalledWith(
       expect.objectContaining({ title: 'Título actualizado' })
     ));
   });
 
-  it('AC7: muestra error 403 si intenta editar un proyecto ajeno', async () => {
-    updateProject.mockRejectedValueOnce(
-      Object.assign(new Error('Forbidden'), { response: { status: 403 } })
-    );
+  it('AC7: muestra error 403 si hook reporta error de permiso', async () => {
+    setupEditHookMock({ error: 'No tienes permiso para editar este proyecto.' });
     renderEdit();
     await screen.findByDisplayValue('Web banco de alimentos');
-
     fireEvent.click(screen.getByRole('button', { name: /guardar/i }));
-
     await screen.findByRole('alert');
     expect(screen.getByRole('alert')).toHaveTextContent(/no tienes permiso/i);
   });

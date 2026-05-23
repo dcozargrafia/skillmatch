@@ -1,58 +1,46 @@
-import { useEffect, useState } from 'react';
-import { getNgoMe, updateNgoMe } from '../../../infrastructure/api/ngoApi.js';
-import { updateUserMe } from '../../../infrastructure/api/usersApi.js';
+import { useState, useEffect } from 'react';
+import useNgoProfile from '../../hooks/useNgoProfile.jsx';
 
 function NgoProfilePage() {
-  const [profile, setProfile] = useState(null);
+  const { profile, loading, error, successMessage, handleSave } = useNgoProfile();
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [organizationName, setOrganizationName] = useState('');
   const [area, setArea] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
-  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
-    getNgoMe()
-      .then((p) => {
-        setProfile(p);
-        setName(p.name ?? '');
-        setEmail(p.email ?? '');
-        setOrganizationName(p.organization_name ?? '');
-        setArea(p.area ?? '');
-      })
-      .catch(() => setLoadError('Error al cargar el perfil. Intenta de nuevo.'));
-  }, []);
-
-  async function handleSave() {
-    setSuccessMsg('');
-    setErrorMsg('');
-    try {
-      await Promise.all([
-        updateNgoMe({ organization_name: organizationName, area }),
-        updateUserMe({ name, email }),
-      ]);
-      setProfile((prev) => ({ ...prev, name, email, organization_name: organizationName, area }));
-      setSuccessMsg('Perfil actualizado correctamente.');
-    } catch {
-      setErrorMsg('Error al actualizar el perfil. Intenta de nuevo.');
+    if (profile) {
+      setName(profile.user.name ?? '');
+      setEmail(profile.user.email ?? '');
+      setOrganizationName(profile.ngo.organization_name ?? '');
+      setArea(profile.ngo.area ?? '');
     }
+  }, [profile]);
+
+  async function onSave() {
+    await handleSave({ name, email, organization_name: organizationName, area });
   }
 
-  if (loadError) return <div className="alert alert--error">{loadError}</div>;
-  if (!profile) return <p className="loading">Cargando...</p>;
+  if (loading) return <p className="loading">Cargando...</p>;
+
+  if (error && !profile) return <div className="alert alert--error">{error}</div>;
+
+  if (!profile) return null;
+
+  const { ngo } = profile;
 
   return (
     <div>
       <div className="page-header">
         <h1 className="page-title">Mi perfil</h1>
-        {profile.verified
+        {ngo.verified
           ? <span className="badge badge--success">ONG verificada</span>
           : <span className="badge badge--warning">Pendiente de verificación</span>
         }
       </div>
 
-      {!profile.verified && (
+      {!ngo.verified && (
         <div className="alert alert--warning" role="status" style={{ marginBottom: 'var(--space-6)' }}>
           Tu organización está pendiente de verificación por el administrador.
         </div>
@@ -104,11 +92,11 @@ function NgoProfilePage() {
             />
           </div>
 
-          {successMsg && <div className="alert alert--success" role="status">{successMsg}</div>}
-          {errorMsg && <div className="alert alert--error" role="alert">{errorMsg}</div>}
+          {successMessage && <div className="alert alert--success" role="status">{successMessage}</div>}
+          {error && <div className="alert alert--error" role="alert">{error}</div>}
         </div>
         <div className="card__footer" style={{ marginTop: 'var(--space-5)' }}>
-          <button type="button" className="btn btn--primary" onClick={handleSave}>
+          <button type="button" className="btn btn--primary" onClick={onSave}>
             Guardar perfil
           </button>
         </div>

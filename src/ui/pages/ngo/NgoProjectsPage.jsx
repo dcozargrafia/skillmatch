@@ -1,17 +1,8 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getOwnProjects } from '../../../infrastructure/api/projectApi.js';
+import useNgoProjects from '../../hooks/useNgoProjects.jsx';
 
 function NgoProjectsPage() {
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    getOwnProjects().then((data) => {
-      setProjects(data);
-      setLoading(false);
-    });
-  }, []);
+  const { projects, loading } = useNgoProjects();
 
   return (
     <div>
