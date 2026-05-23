@@ -65,14 +65,17 @@ export default function useNgoProjectForm(projectId) {
   /**
    * handleSubmit: crea o actualiza el proyecto.
    * @param {object} data - campos del formulario
+   * @param {object[]} [skills] - skills seleccionados (solo para edit mode)
    * @returns {Promise<object|undefined>} - proyecto creado/actualizado, o undefined si error
    */
   const handleSubmit = useCallback(
-    async (data) => {
+    async (data, skills) => {
       setError(null);
       try {
         if (isEdit) {
-          const updated = await updateProjectUseCase(projectId, data, undefined, project);
+          const args = [projectId, data, undefined, project];
+          if (skills !== undefined) args.push(skills);
+          const updated = await updateProjectUseCase(...args);
           return updated;
         } else {
           const created = await createProjectUseCase(data);
