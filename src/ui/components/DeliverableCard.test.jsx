@@ -6,6 +6,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { DeliverableCard } from './DeliverableCard.jsx';
+import { getDeliverableStatusLabel } from '@/domain/project/Project.js';
 
 const mockDeliverable = {
   id: 'del-1',
@@ -34,7 +35,7 @@ describe('DeliverableCard', () => {
   it('renders status badge', () => {
     render(<DeliverableCard {...defaultProps} />);
 
-    expect(screen.getByText('pending')).toBeInTheDocument();
+    expect(screen.getByText('Pendiente')).toBeInTheDocument();
   });
 
   describe('student variant', () => {
@@ -151,29 +152,29 @@ describe('DeliverableCard', () => {
     it('only shows status badge, no action buttons', () => {
       render(<DeliverableCard {...defaultProps} deliverable={{ ...mockDeliverable, status: 'in_review' }} variant="readonly" />);
 
-      expect(screen.getByText('in_review')).toBeInTheDocument();
+      expect(screen.getByText('En revisión')).toBeInTheDocument();
       expect(screen.queryByRole('button')).not.toBeInTheDocument();
     });
 
     it('shows approved status with success badge class', () => {
       render(<DeliverableCard {...defaultProps} deliverable={{ ...mockDeliverable, status: 'approved' }} variant="readonly" />);
 
-      expect(screen.getByText('approved')).toBeInTheDocument();
-      const badge = screen.getByText('approved');
+      expect(screen.getByText('Aprobado')).toBeInTheDocument();
+      const badge = screen.getByText('Aprobado');
       expect(badge).toHaveClass('badge--success');
     });
 
     it('shows rejected status with error badge class', () => {
       render(<DeliverableCard {...defaultProps} deliverable={{ ...mockDeliverable, status: 'rejected' }} variant="readonly" />);
 
-      const badge = screen.getByText('rejected');
+      const badge = screen.getByText('Rechazado');
       expect(badge).toHaveClass('badge--error');
     });
 
     it('shows in_review status with warning badge class', () => {
       render(<DeliverableCard {...defaultProps} deliverable={{ ...mockDeliverable, status: 'in_review' }} variant="readonly" />);
 
-      const badge = screen.getByText('in_review');
+      const badge = screen.getByText('En revisión');
       expect(badge).toHaveClass('badge--warning');
     });
   });
@@ -193,6 +194,71 @@ describe('DeliverableCard', () => {
 
       expect(screen.getByRole('button', { name: /aprobar/i })).toBeDisabled();
       expect(screen.getByRole('button', { name: /rechazar/i })).toBeDisabled();
+    });
+  });
+
+  // PR2: Spanish status labels
+  describe('PR2: Spanish status labels', () => {
+    const mockWithDate = {
+      id: 'del-1',
+      title: 'First Deliverable',
+      description: 'Build the initial wireframes',
+      status: 'pending',
+      created_at: '2026-05-10T10:00:00Z',
+    };
+
+    it('renders Spanish status label instead of raw status', () => {
+      render(<DeliverableCard {...defaultProps} deliverable={mockWithDate} />);
+      expect(screen.getByText('Pendiente')).toBeInTheDocument();
+    });
+
+    it('shows approved status as Aprobado', () => {
+      render(<DeliverableCard {...defaultProps} deliverable={{ ...mockWithDate, status: 'approved' }} />);
+      expect(screen.getByText('Aprobado')).toBeInTheDocument();
+    });
+
+    it('shows in_progress status as En progreso', () => {
+      render(<DeliverableCard {...defaultProps} deliverable={{ ...mockWithDate, status: 'in_progress' }} />);
+      expect(screen.getByText('En progreso')).toBeInTheDocument();
+    });
+
+    it('shows in_review status as En revisión', () => {
+      render(<DeliverableCard {...defaultProps} deliverable={{ ...mockWithDate, status: 'in_review' }} />);
+      expect(screen.getByText('En revisión')).toBeInTheDocument();
+    });
+
+    it('shows rejected status as Rechazado', () => {
+      render(<DeliverableCard {...defaultProps} deliverable={{ ...mockWithDate, status: 'rejected' }} />);
+      expect(screen.getByText('Rechazado')).toBeInTheDocument();
+    });
+
+    it('renders formatted created_at date', () => {
+      const withDate = { ...mockWithDate, created_at: '2026-05-10T10:00:00Z' };
+      render(<DeliverableCard {...defaultProps} deliverable={withDate} variant="readonly" />);
+      // Check date is rendered (es-ES locale produces 10/5/2026 or 10/05/2026)
+      expect(screen.getByText(/10[/.]5[/.]2026/i)).toBeInTheDocument();
+    });
+
+    it('shows file_url when present', () => {
+      const withFile = { ...mockWithDate, status: 'in_progress', file_url: 'https://files.example.com/doc.pdf' };
+      render(<DeliverableCard {...defaultProps} deliverable={withFile} />);
+      expect(screen.getByText('https://files.example.com/doc.pdf')).toBeInTheDocument();
+    });
+
+    it('shows comment when present', () => {
+      const withComment = { ...mockWithDate, comment: '这是我的提交说明' };
+      render(<DeliverableCard {...defaultProps} deliverable={withComment} />);
+      expect(screen.getByText('这是我的提交说明')).toBeInTheDocument();
+    });
+
+    it('does NOT render file_url when absent', () => {
+      render(<DeliverableCard {...defaultProps} deliverable={mockWithDate} variant="readonly" />);
+      expect(screen.queryByText(/\.pdf$/i)).not.toBeInTheDocument();
+    });
+
+    it('does NOT render comment when absent', () => {
+      render(<DeliverableCard {...defaultProps} deliverable={mockWithDate} variant="readonly" />);
+      expect(screen.queryByText(/这是我的提交说明/)).not.toBeInTheDocument();
     });
   });
 });

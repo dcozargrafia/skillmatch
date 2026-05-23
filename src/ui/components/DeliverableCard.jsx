@@ -11,6 +11,7 @@
  */
 
 import { useState } from 'react';
+import { getDeliverableStatusLabel } from '../../domain/project/Project.js';
 
 /**
  * @param {object} props
@@ -42,11 +43,26 @@ export function DeliverableCard({ deliverable, variant, onStart, onSubmit, onApp
       <div className="card card--accent">
         <div className="card__header">
           <h4 className="card__title">{deliverable.title}</h4>
-          <span className={badgeClass}>{deliverable.status}</span>
+          <span className={badgeClass}>{getDeliverableStatusLabel(deliverable.status)}</span>
         </div>
         {deliverable.description && (
           <div className="card__body">
             <p>{deliverable.description}</p>
+          </div>
+        )}
+        {deliverable.created_at && (
+          <div className="card__footer">
+            <span className="text-muted text-sm font-mono">{new Date(deliverable.created_at).toLocaleDateString('es-ES')}</span>
+          </div>
+        )}
+        {deliverable.file_url && (
+          <div className="card__body">
+            <a href={deliverable.file_url} target="_blank" rel="noopener noreferrer" className="text-link">{deliverable.file_url}</a>
+          </div>
+        )}
+        {deliverable.comment && (
+          <div className="card__body">
+            <p className="text-muted">{deliverable.comment}</p>
           </div>
         )}
       </div>
@@ -58,11 +74,21 @@ export function DeliverableCard({ deliverable, variant, onStart, onSubmit, onApp
       <div className="card">
         <div className="card__header">
           <h3 className="card__title">{deliverable.title}</h3>
-          <span className={badgeClass}>{deliverable.status}</span>
+          <span className={badgeClass}>{getDeliverableStatusLabel(deliverable.status)}</span>
         </div>
         {deliverable.description && (
           <div className="card__body">
             <p>{deliverable.description}</p>
+          </div>
+        )}
+        {deliverable.file_url && (
+          <div className="card__body">
+            <a href={deliverable.file_url} target="_blank" rel="noopener noreferrer" className="text-link">{deliverable.file_url}</a>
+          </div>
+        )}
+        {deliverable.comment && (
+          <div className="card__body">
+            <p className="text-muted">{deliverable.comment}</p>
           </div>
         )}
         {!readOnly && deliverable.status === 'in_review' && (
@@ -94,11 +120,21 @@ export function DeliverableCard({ deliverable, variant, onStart, onSubmit, onApp
     <div className="card card--accent">
       <div className="card__header">
         <h4 className="card__title">{deliverable.title}</h4>
-        <span className={badgeClass}>{deliverable.status}</span>
+        <span className={badgeClass}>{getDeliverableStatusLabel(deliverable.status)}</span>
       </div>
       {deliverable.description && (
         <div className="card__body">
           <p>{deliverable.description}</p>
+        </div>
+      )}
+      {deliverable.file_url && (
+        <div className="card__body">
+          <a href={deliverable.file_url} target="_blank" rel="noopener noreferrer" className="text-link">{deliverable.file_url}</a>
+        </div>
+      )}
+      {deliverable.comment && (
+        <div className="card__body">
+          <p className="text-muted">{deliverable.comment}</p>
         </div>
       )}
 
