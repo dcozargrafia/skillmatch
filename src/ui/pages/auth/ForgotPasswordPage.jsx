@@ -1,21 +1,8 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { forgotPasswordRequest } from '../../../infrastructure/api/authApi.js';
+import useForgotPassword from '../../hooks/useForgotPassword.jsx';
 
 function ForgotPasswordPage() {
-  const [email, setEmail] = useState('');
-  const [sent, setSent] = useState(false);
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-    if (!email.trim()) return;
-    try {
-      await forgotPasswordRequest(email.trim());
-    } catch {
-      // intencionalmente silencioso — no revelar si el email existe
-    }
-    setSent(true);
-  }
+  const { email, setEmail, error, isLoading, sent, handleSubmit } = useForgotPassword();
 
   if (sent) {
     return (
@@ -58,7 +45,13 @@ function ForgotPasswordPage() {
             />
           </div>
 
-          <button type="submit" className="btn btn--primary">Enviar enlace</button>
+          {error && (
+            <div className="alert alert--error" role="alert">{error}</div>
+          )}
+
+          <button type="submit" className="btn btn--primary" disabled={isLoading}>
+            {isLoading ? 'Enviando...' : 'Enviar enlace'}
+          </button>
         </form>
 
         <div className="auth-form__footer" style={{ marginTop: 'var(--space-5)', justifyContent: 'center' }}>

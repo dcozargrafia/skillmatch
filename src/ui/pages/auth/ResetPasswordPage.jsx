@@ -1,38 +1,36 @@
-import { useState } from 'react';
-import { useSearchParams, useNavigate, Link } from 'react-router-dom';
-import { resetPasswordRequest } from '../../../infrastructure/api/authApi.js';
+import { useSearchParams, Link } from 'react-router-dom';
+import useResetPassword from '../../hooks/useResetPassword.jsx';
 
 function ResetPasswordPage() {
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const token = searchParams.get('token') ?? '';
+  const {
+    password,
+    setPassword,
+    confirmPassword,
+    setConfirmPassword,
+    errors,
+    isLoading,
+    isSuccess,
+    error,
+    handleSubmit,
+  } = useResetPassword();
 
-  const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
-  const [tokenExpired, setTokenExpired] = useState(false);
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setErrorMsg('');
-    setTokenExpired(false);
-
-    if (password !== confirm) {
-      setErrorMsg('Las contraseñas no coinciden.');
-      return;
-    }
-
-    try {
-      await resetPasswordRequest(token, password);
-      navigate('/login', { replace: true });
-    } catch (err) {
-      if (err?.response?.status === 400) {
-        setErrorMsg('El enlace es inválido o ha expirado.');
-        setTokenExpired(true);
-      } else {
-        setErrorMsg('Error al restablecer la contraseña. Intenta de nuevo.');
-      }
-    }
+  if (isSuccess) {
+    return (
+      <div className="auth-page">
+        <div className="auth-card">
+          <div className="auth-card__brand">
+            <span className="auth-card__logo">Skill<span>Match</span></span>
+          </div>
+          <h1 className="auth-card__title">Contraseña restablecida</h1>
+          <p className="auth-card__subtitle">
+            Tu contraseña ha sido cambiada correctamente.
+          </p>
+          <div className="auth-form__footer" style={{ marginTop: 'var(--space-5)', justifyContent: 'center' }}>
+            <Link to="/login" className="auth-form__link">Volver al inicio de sesión</Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -50,10 +48,13 @@ function ResetPasswordPage() {
             <input
               id="password"
               type="password"
-              className="form-input"
+              className={`form-input${errors.password ? ' form-input--error' : ''}`}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+            {errors.password && (
+              <span className="form-hint form-hint--error">{errors.password}</span>
+            )}
           </div>
 
           <div className="form-field">
@@ -61,22 +62,27 @@ function ResetPasswordPage() {
             <input
               id="confirm"
               type="password"
-              className="form-input"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
+              className={`form-input${errors.confirmPassword ? ' form-input--error' : ''}`}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
             />
+            {errors.confirmPassword && (
+              <span className="form-hint form-hint--error">{errors.confirmPassword}</span>
+            )}
           </div>
 
-          {errorMsg && (
+          {error && (
             <div className="alert alert--error" role="alert">
-              {errorMsg}
-              {tokenExpired && (
+              {error}
+              {errors.confirmPassword && (
                 <> — <Link to="/forgot-password" className="auth-form__link">Solicitar nuevo enlace</Link></>
               )}
             </div>
           )}
 
-          <button type="submit" className="btn btn--primary">Restablecer contraseña</button>
+          <button type="submit" className="btn btn--primary" disabled={isLoading}>
+            {isLoading ? 'Restableciendo...' : 'Restablecer contraseña'}
+          </button>
         </form>
       </div>
     </div>
