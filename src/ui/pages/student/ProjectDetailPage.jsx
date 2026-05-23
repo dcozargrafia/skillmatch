@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom';
 import useStudentProjectDetail from '../../hooks/useStudentProjectDetail.jsx';
 import { PageHeader } from '../../components/PageHeader.jsx';
+import { Section } from '../../components/Section.jsx';
 import { AlertBlock } from '../../components/AlertBlock.jsx';
 
 function ProjectDetailPage() {
@@ -46,10 +47,7 @@ function ProjectDetailPage() {
       </div>
 
       {project.skills?.length > 0 && (
-        <div className="section">
-          <div className="section__header">
-            <h2 className="section__title">Skills requeridas</h2>
-          </div>
+        <Section title="Skills requeridas">
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
             {project.skills.map((s) => {
               const skill = skills.find((sk) => sk.id === s.skill_id);
@@ -61,7 +59,7 @@ function ProjectDetailPage() {
               ) : null;
             })}
           </div>
-        </div>
+        </Section>
       )}
 
       {error && (

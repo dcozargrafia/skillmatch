@@ -1,5 +1,6 @@
 import useAdminDashboard from '../../hooks/useAdminDashboard.jsx';
 import { PageHeader } from '../../components/PageHeader.jsx';
+import { Section } from '../../components/Section.jsx';
 import { EmptyState } from '../../components/EmptyState.jsx';
 import { AlertBlock } from '../../components/AlertBlock.jsx';
 
@@ -64,11 +65,7 @@ function AdminDashboardPage() {
       )}
 
       {/* Skills */}
-      <div className="section">
-        <div className="section__header">
-          <h2 className="section__title">Skills</h2>
-        </div>
-
+      <Section title="Skills">
         {skillError && (
           <AlertBlock variant="error" style={{ marginBottom: 'var(--space-4)' }}>
             {skillError}
@@ -115,14 +112,10 @@ function AdminDashboardPage() {
             </div>
           ))}
         </div>
-      </div>
+      </Section>
 
       {/* ONGs */}
-      <div className="section">
-        <div className="section__header">
-          <h2 className="section__title">ONGs pendientes de verificación</h2>
-        </div>
-
+      <Section title="ONGs pendientes de verificación">
         {ngos.length === 0 && (
           <EmptyState message="No hay ONGs pendientes de verificación." />
         )}
@@ -149,7 +142,7 @@ function AdminDashboardPage() {
             </div>
           ))}
         </div>
-      </div>
+      </Section>
     </div>
   );
 }
