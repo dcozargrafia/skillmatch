@@ -17,8 +17,21 @@ vi.mock('../../../ui/hooks/useStudentReview.jsx', () => ({
 }));
 
 vi.mock('../../../ui/components/DeliverableCard.jsx', () => ({
-  DeliverableCard: vi.fn(({ deliverable }) => (
-    <div data-testid="deliverable-card">{deliverable.title} [{deliverable.status}]</div>
+  DeliverableCard: vi.fn(({ deliverable, onStart, onSubmit, highlighted }) => (
+    <div data-testid="deliverable-card" data-highlighted={highlighted ? 'true' : 'false'}>
+      <div>{deliverable.title} [{deliverable.status}]</div>
+      {deliverable.status === 'pending' && onStart && (
+        <button onClick={() => onStart(deliverable.id)}>Iniciar</button>
+      )}
+      {deliverable.status === 'in_progress' && onSubmit && (
+        <button onClick={() => onSubmit(deliverable.id, 'https://files.example.com/output.pdf')}>
+          Enviar a revisión
+        </button>
+      )}
+      {deliverable.status === 'rejected' && onStart && (
+        <button onClick={() => onStart(deliverable.id)}>Reintentar</button>
+      )}
+    </div>
   )),
 }));
 
@@ -188,8 +201,8 @@ describe('StudentAssignmentPage', () => {
       },
     });
     renderPage();
-    // Verify deliverables are rendered
-    expect(await screen.findByText(/Diseño de BD/)).toBeInTheDocument();
+    fireEvent.click(await screen.findByRole('button', { name: /iniciar/i }));
+    await waitFor(() => expect(handleStartDeliverable).toHaveBeenCalledWith(mockDeliverables[0], mockDeliverables));
   });
 
   it('AC7: Enviar a revisión llama a handleSubmitDeliverable con file_url', async () => {
@@ -206,8 +219,13 @@ describe('StudentAssignmentPage', () => {
       },
     });
     renderPage();
-    // Verify deliverables are rendered
-    expect(await screen.findByText(/Backend API/)).toBeInTheDocument();
+    fireEvent.click(await screen.findByRole('button', { name: /enviar a revisión/i }));
+    await waitFor(() =>
+      expect(handleSubmitDeliverable).toHaveBeenCalledWith(
+        mockDeliverables[1],
+        'https://files.example.com/output.pdf'
+      )
+    );
   });
 
   it('AC8: un entregable rejected muestra acción de reanudación', async () => {
@@ -224,9 +242,13 @@ describe('StudentAssignmentPage', () => {
       },
     });
     renderPage();
-    await screen.findByText(/Doc revisada/);
-    // DeliverableCard mock doesn't render buttons, so verify hook call expectation
-    expect(handleStartDeliverable).not.toHaveBeenCalled();
+    fireEvent.click(await screen.findByRole('button', { name: /reintentar/i }));
+    await waitFor(() =>
+      expect(handleStartDeliverable).toHaveBeenCalledWith(
+        { id: 'd4', title: 'Doc revisada', status: 'rejected', description: 'Corregir feedback' },
+        [{ id: 'd4', title: 'Doc revisada', status: 'rejected', description: 'Corregir feedback' }]
+      )
+    );
   });
 
   it('AC9: muestra botón Descargar certificado cuando assignment tiene certificate_id y status completed', async () => {
@@ -340,10 +362,12 @@ describe('StudentAssignmentPage', () => {
 
       await screen.findByText('Web banco de alimentos');
 
-      // DeliverableCard should receive highlightedDeliverableId="d1"
-      // The mock captures props - we verify the prop is passed
       const cards = screen.getAllByTestId('deliverable-card');
       expect(cards).toHaveLength(2);
+      const wireframesCard = cards.find((card) => card.textContent?.includes('Wireframes'));
+      const prototipoCard = cards.find((card) => card.textContent?.includes('Prototipo'));
+      expect(wireframesCard).toHaveAttribute('data-highlighted', 'true');
+      expect(prototipoCard).toHaveAttribute('data-highlighted', 'false');
     });
   });
 });

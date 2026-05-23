@@ -22,7 +22,7 @@ import { acceptAssignmentUseCase } from '../../application/assignment/acceptAssi
  *   error: string|null,
  *   actions: {
  *     handleStartDeliverable: (deliverable: object, allDeliverables: object[]) => Promise<void>,
- *     handleSubmitDeliverable: (deliverable: object, fileUrl: string, allDeliverables: object[]) => Promise<void>,
+ *     handleSubmitDeliverable: (deliverable: object, fileUrl: string) => Promise<void>,
  *     handleAcceptAssignment: () => Promise<void>,
  *   },
  * }}
@@ -80,10 +80,10 @@ export default function useStudentAssignment(assignmentId) {
   );
 
   const handleSubmitDeliverable = useCallback(
-    async (deliverable, fileUrl, allDeliverables) => {
+    async (deliverable, fileUrl) => {
       setError(null);
       try {
-        await submitDeliverableUseCase(deliverable, fileUrl, allDeliverables);
+        await submitDeliverableUseCase(deliverable, fileUrl);
         const { deliverables: d } = await getStudentAssignmentDetailUseCase(assignmentId);
         setDeliverables(d ?? []);
       } catch {

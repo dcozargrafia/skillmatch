@@ -131,6 +131,8 @@ function StudentAssignmentPage() {
               key={d.id}
               deliverable={d}
               variant="student"
+              onStart={() => actions.handleStartDeliverable(d, deliverables)}
+              onSubmit={(_, fileUrl) => actions.handleSubmitDeliverable(d, fileUrl)}
               highlighted={highlightedDeliverableId === d.id}
               showViewDetails={true}
               onViewDetails={() => {}}

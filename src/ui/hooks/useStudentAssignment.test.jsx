@@ -131,10 +131,10 @@ describe('useStudentAssignment', () => {
     });
 
     await act(async () => {
-      await result.current.actions.handleSubmitDeliverable(mockDeliverables[1], 'https://file.example.com/output.pdf', mockDeliverables);
+      await result.current.actions.handleSubmitDeliverable(mockDeliverables[1], 'https://file.example.com/output.pdf');
     });
 
-    expect(submitDeliverableUseCase).toHaveBeenCalledWith(mockDeliverables[1], 'https://file.example.com/output.pdf', mockDeliverables);
+    expect(submitDeliverableUseCase).toHaveBeenCalledWith(mockDeliverables[1], 'https://file.example.com/output.pdf');
   });
 
   it('handleAcceptAssignment catches error and sets error message', async () => {
