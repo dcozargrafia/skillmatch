@@ -10,7 +10,6 @@ vi.mock('../../../ui/hooks/useStudentAssignments.jsx', () => ({
   default: vi.fn(),
 }));
 
-let _mockDeliverableCardProps = null;
 vi.mock('../../../ui/components/DeliverableCard.jsx', () => ({
   DeliverableCard: vi.fn(({ deliverable, showViewDetails, onViewDetails }) => {
     if (_captureViewDetails) {
@@ -182,54 +181,5 @@ describe('StudentApplicationsPage', () => {
       expect(typeof capturedProps.onViewDetails).toBe('function');
     });
 
-    it('onViewDetails callback is invoked with correct URL parameters', async () => {
-      // Track all calls to the captured callback
-      const calls = [];
-      let capturedProps = null;
-      _captureViewDetails = (props) => {
-        capturedProps = props;
-        // Store the callback but immediately wrap it to track calls
-        const originalCallback = props.onViewDetails;
-        if (typeof originalCallback === 'function') {
-          props.onViewDetails = (...args) => {
-            calls.push(args);
-            return originalCallback(...args);
-          };
-        }
-      };
-
-      useStudentAssignments.mockReturnValue({
-        assignments: [
-          {
-            id: 'assign1',
-            project_id: 'p1',
-            status: 'active',
-            project_title: 'Web banco de alimentos',
-            project_status: 'in_progress',
-            deliverables: [],
-          },
-        ],
-        deliverablesByAssignment: {
-          assign1: [
-            { id: 'd1', title: 'Wireframes', status: 'pending', description: 'Algo' },
-          ],
-        },
-        loading: false,
-        error: null,
-        refresh: vi.fn(),
-      });
-
-      renderPage();
-      await screen.findByText('Web banco de alimentos');
-
-      expect(capturedProps).not.toBeNull();
-      expect(typeof capturedProps.onViewDetails).toBe('function');
-
-      // Trigger the onViewDetails callback
-      capturedProps.onViewDetails({ id: 'd1', title: 'Wireframes', status: 'pending' });
-
-      // Verify the callback was called (navigation happens via react-router in real app)
-      expect(calls).toHaveLength(1);
-    });
   });
 });

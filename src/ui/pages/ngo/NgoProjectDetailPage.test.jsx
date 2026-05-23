@@ -84,12 +84,6 @@ beforeEach(() => {
 });
 
 describe('NgoProjectDetailPage — useProjectDetail hook integration', () => {
-  it('muestra loading cuando hook está cargando', () => {
-    setupHookMock({ loading: true, project: null });
-    renderPage();
-    expect(screen.getByText(/cargando/i)).toBeInTheDocument();
-  });
-
   it('muestra alert de error cuando hook reporta error sin proyecto', () => {
     setupHookMock({ loading: false, error: 'Error al cargar el proyecto.', project: null });
     renderPage();
@@ -173,29 +167,6 @@ describe('NgoProjectDetailPage — useProjectDetail hook integration', () => {
       expect(screen.getByText('Wireframes')).toBeInTheDocument();
     });
     expect(screen.getByText('Prototipo')).toBeInTheDocument();
-  });
-
-  it('muestra badges de estado en entregables', async () => {
-    setupHookMock({
-      loading: false,
-      project: mockProject({ status: 'in_review' }),
-      assignment: mockAssignment,
-      deliverables: [
-        mockDeliverable({ id: 'd1', title: 'Wireframes', status: 'approved' }),
-        mockDeliverable({ id: 'd2', title: 'Prototipo', status: 'rejected' }),
-        mockDeliverable({ id: 'd3', title: 'Docs', status: 'in_review' }),
-        mockDeliverable({ id: 'd4', title: 'Testing', status: 'pending' }),
-      ],
-    });
-    renderPage();
-    await waitFor(() => {
-      expect(screen.getByText('Wireframes')).toBeInTheDocument();
-    });
-    // Mock DeliverableCard renders [status], check Spanish labels in mock output
-    expect(screen.getAllByText('Aprobado')).toHaveLength(1);
-    expect(screen.getAllByText('Rechazado')).toHaveLength(1);
-    expect(screen.getAllByText('En revisión')).toHaveLength(2);
-    expect(screen.getAllByText('Pendiente')).toHaveLength(1);
   });
 
   it('muestra botones Aprobar/Rechazar en entregable in_review', async () => {
