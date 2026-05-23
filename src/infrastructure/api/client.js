@@ -4,6 +4,7 @@
  */
 
 import axios from 'axios';
+import { navigateTo } from '../../ui/router/navigator.js';
 
 const client = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -21,7 +22,7 @@ client.interceptors.response.use(
       window.location.pathname.startsWith('/reset-password');
 
     if (error.response?.status === 401 && !isAuthRoute) {
-      window.location.href = '/login';
+      navigateTo('/login');
       return Promise.reject(error);
     }
     return Promise.reject(error);
