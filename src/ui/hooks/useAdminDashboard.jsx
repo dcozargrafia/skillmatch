@@ -13,6 +13,8 @@ import { deleteSkillUseCase } from '../../application/admin/deleteSkillUseCase.j
 import { verifyNgoUseCase } from '../../application/admin/verifyNgoUseCase.js';
 import { getUnverifiedNgosUseCase } from '../../application/admin/getUnverifiedNgosUseCase.js';
 
+const DEFAULT_SKILL_CATEGORY = 'Desarrollo';
+
 /**
  * @returns {{
  *   skills: object[],
@@ -42,7 +44,7 @@ export default function useAdminDashboard() {
   const [confirmVerification, setConfirmVerification] = useState(null);
   const [skillError, setSkillError] = useState(null);
   const [newSkillName, setNewSkillName] = useState('');
-  const [newSkillCategory, setNewSkillCategory] = useState('');
+  const [newSkillCategory, setNewSkillCategory] = useState(DEFAULT_SKILL_CATEGORY);
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
@@ -73,7 +75,7 @@ export default function useAdminDashboard() {
         const updatedSkills = await getSkillsUseCase();
         setSkills(updatedSkills);
         setNewSkillName('');
-        setNewSkillCategory('');
+        setNewSkillCategory(DEFAULT_SKILL_CATEGORY);
       } catch {
         setSkillError('Error al crear la habilidad');
       }
