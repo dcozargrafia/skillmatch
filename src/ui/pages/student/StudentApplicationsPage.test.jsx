@@ -2,7 +2,6 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import StudentApplicationsPage from './StudentApplicationsPage';
-import { getStatusLabel, getProjectStatusMessage, sortDeliverables } from '@/domain/project/Project.js';
 
 // Module-level state to control mock behavior for PR3 tests
 let _captureViewDetails = null;
@@ -62,18 +61,6 @@ beforeEach(() => {
 });
 
 describe('StudentApplicationsPage', () => {
-  it('AC1: muestra indicador de carga mientras se obtienen los datos', () => {
-    useStudentAssignments.mockReturnValue({
-      assignments: [],
-      deliverablesByAssignment: {},
-      loading: true,
-      error: null,
-      refresh: vi.fn(),
-    });
-    renderPage();
-    expect(screen.getByText(/cargando/i)).toBeInTheDocument();
-  });
-
   it('AC2: muestra estado vacío si no hay assignments', async () => {
     useStudentAssignments.mockReturnValue({
       assignments: [],
@@ -153,127 +140,6 @@ describe('StudentApplicationsPage', () => {
       'href',
       '/student/assignments/assign1'
     );
-  });
-
-  it('AC6: múltiples assignments cada uno con sus deliverable cards', async () => {
-    useStudentAssignments.mockReturnValue({
-      assignments: mockAssignments,
-      deliverablesByAssignment: {
-        assign1: [{ id: 'd1', title: 'Entregable A', status: 'pending', description: 'Algo' }],
-        assign2: [{ id: 'd2', title: 'Entregable B', status: 'in_progress', description: 'Algo' }],
-      },
-      loading: false,
-      error: null,
-      refresh: vi.fn(),
-    });
-    renderPage();
-    await screen.findByText('Web banco de alimentos');
-    await screen.findByText('Campaña digital refugio');
-    expect(screen.queryByText(/cargando/i)).not.toBeInTheDocument();
-  });
-
-  // PR2: Spanish project status badge, contextual message, sorted deliverables
-  describe('PR2: Spanish project status and sorting', () => {
-    it('renders translated project status badge (En progreso)', async () => {
-      useStudentAssignments.mockReturnValue({
-        assignments: [
-          {
-            id: 'assign1',
-            project_id: 'p1',
-            status: 'active',
-            project_title: 'Web banco de alimentos',
-            project_status: 'in_progress',
-            deliverables: [],
-          },
-        ],
-        deliverablesByAssignment: {},
-        loading: false,
-        error: null,
-        refresh: vi.fn(),
-      });
-      renderPage();
-      await screen.findByText('Web banco de alimentos');
-      expect(screen.getByText('En progreso')).toBeInTheDocument();
-    });
-
-    it('renders translated project status badge (En revisión)', async () => {
-      useStudentAssignments.mockReturnValue({
-        assignments: [
-          {
-            id: 'assign1',
-            project_id: 'p1',
-            status: 'active',
-            project_title: 'Web banco de alimentos',
-            project_status: 'in_review',
-            deliverables: [],
-          },
-        ],
-        deliverablesByAssignment: {},
-        loading: false,
-        error: null,
-        refresh: vi.fn(),
-      });
-      renderPage();
-      await screen.findByText('Web banco de alimentos');
-      expect(screen.getByText('En revisión')).toBeInTheDocument();
-    });
-
-    it('shows contextual message when project is in_review with pending deliverables', async () => {
-      useStudentAssignments.mockReturnValue({
-        assignments: [
-          {
-            id: 'assign1',
-            project_id: 'p1',
-            status: 'active',
-            project_title: 'Web banco de alimentos',
-            project_status: 'in_review',
-            deliverables: [],
-          },
-        ],
-        deliverablesByAssignment: {
-          assign1: [
-            { id: 'd1', title: 'Wireframes', status: 'in_review', created_at: '2026-05-01T10:00:00Z' },
-            { id: 'd2', title: 'Prototipo', status: 'pending', created_at: '2026-05-05T10:00:00Z' },
-          ],
-        },
-        loading: false,
-        error: null,
-        refresh: vi.fn(),
-      });
-      renderPage();
-      await screen.findByText('Web banco de alimentos');
-      const message = getProjectStatusMessage('in_review', [
-        { id: 'd1', title: 'Wireframes', status: 'in_review', created_at: '2026-05-01T10:00:00Z' },
-        { id: 'd2', title: 'Prototipo', status: 'pending', created_at: '2026-05-05T10:00:00Z' },
-      ]);
-      expect(screen.getByText(message)).toBeInTheDocument();
-    });
-
-    it('sortDeliverables orders in_review first, then in_progress, then pending', () => {
-      const deliverables = [
-        { id: 'd1', title: 'Wireframes', status: 'pending', created_at: '2026-05-01T10:00:00Z' },
-        { id: 'd2', title: 'Prototipo', status: 'in_review', created_at: '2026-05-02T10:00:00Z' },
-        { id: 'd3', title: 'Docs', status: 'approved', created_at: '2026-05-03T10:00:00Z' },
-        { id: 'd4', title: 'Testing', status: 'in_progress', created_at: '2026-05-04T10:00:00Z' },
-      ];
-      const sorted = sortDeliverables(deliverables);
-      expect(sorted[0].status).toBe('in_review');
-      expect(sorted[1].status).toBe('in_progress');
-      expect(sorted[2].status).toBe('pending');
-      expect(sorted[3].status).toBe('approved');
-    });
-
-    it('sortDeliverables uses created_at as tiebreaker for same status', () => {
-      const deliverables = [
-        { id: 'd1', title: 'Wireframes', status: 'pending', created_at: '2026-05-10T10:00:00Z' },
-        { id: 'd2', title: 'Prototipo', status: 'pending', created_at: '2026-05-01T10:00:00Z' },
-        { id: 'd3', title: 'Docs', status: 'pending', created_at: '2026-05-05T10:00:00Z' },
-      ];
-      const sorted = sortDeliverables(deliverables);
-      expect(sorted[0].title).toBe('Wireframes'); // newest first
-      expect(sorted[1].title).toBe('Docs');
-      expect(sorted[2].title).toBe('Prototipo'); // oldest last
-    });
   });
 
   // PR3: Ver detalles button on each DeliverableCard

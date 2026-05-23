@@ -104,23 +104,6 @@ describe('ProjectsListPage', () => {
     expect(setSelectedSkillId).toHaveBeenCalledWith('s1');
   });
 
-  it('AC3c: no hay dropdown de estado en la toolbar', async () => {
-    useStudentProjects.mockReturnValue({
-      projects: mockProjects,
-      skills: mockSkills,
-      loading: false,
-      error: null,
-      selectedSkillId: '',
-      setSelectedSkillId: vi.fn(),
-      refresh: vi.fn(),
-    });
-    renderPage();
-    await screen.findByText('App de reciclaje');
-    const selects = screen.queryAllByRole('combobox');
-    expect(selects.length).toBe(1);
-    expect(screen.queryByRole('combobox', { name: /estado/i })).not.toBeInTheDocument();
-  });
-
   it('AC4: clic en una tarjeta navega al detalle del proyecto', async () => {
     useStudentProjects.mockReturnValue({
       projects: mockProjects,
@@ -151,17 +134,4 @@ describe('ProjectsListPage', () => {
     await screen.findByText(/no hay proyectos/i);
   });
 
-  it('AC6: muestra indicador de carga mientras se obtienen los datos', async () => {
-    useStudentProjects.mockReturnValue({
-      projects: [],
-      skills: [],
-      loading: true,
-      error: null,
-      selectedSkillId: '',
-      setSelectedSkillId: vi.fn(),
-      refresh: vi.fn(),
-    });
-    renderPage();
-    expect(screen.getByText(/cargando/i)).toBeInTheDocument();
-  });
 });

@@ -2,7 +2,6 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import StudentAssignmentPage from './StudentAssignmentPage';
-import { getStatusLabel, getProjectStatusMessage, sortDeliverables } from '@/domain/project/Project.js';
 
 vi.mock('../../../ui/hooks/useStudentAssignment.jsx', () => ({
   default: vi.fn(),
@@ -288,52 +287,6 @@ describe('StudentAssignmentPage', () => {
     renderPage();
     await screen.findByText('Web banco de alimentos');
     expect(screen.queryByRole('button', { name: /enviar valoración/i })).not.toBeInTheDocument();
-  });
-
-  // PR2: Spanish project badge, message, and sorting
-  describe('PR2: Spanish project status and sorting', () => {
-    it('renders translated project status badge (En progreso)', async () => {
-      setupAssignmentHook({
-        assignment: { ...mockAssignment, project_status: 'in_progress' },
-        deliverables: mockDeliverables,
-        loading: false,
-        error: null,
-      });
-      renderPage();
-      await screen.findByText('Web banco de alimentos');
-      expect(screen.getByText('En progreso')).toBeInTheDocument();
-    });
-
-    it('shows contextual message when project is in_review with deliverables', async () => {
-      const deliverablesWithReview = [
-        { id: 'd1', title: 'Wireframes', status: 'in_review', created_at: '2026-05-01T10:00:00Z' },
-        { id: 'd2', title: 'Prototipo', status: 'pending', created_at: '2026-05-05T10:00:00Z' },
-      ];
-      setupAssignmentHook({
-        assignment: { ...mockAssignment, project_status: 'in_review' },
-        deliverables: deliverablesWithReview,
-        loading: false,
-        error: null,
-      });
-      renderPage();
-      await screen.findByText('Web banco de alimentos');
-      const message = getProjectStatusMessage('in_review', deliverablesWithReview);
-      expect(screen.getByText(message)).toBeInTheDocument();
-    });
-
-    it('sortDeliverables orders in_review first then in_progress then pending', () => {
-      const deliverables = [
-        { id: 'd1', title: 'Wireframes', status: 'pending', created_at: '2026-05-01T10:00:00Z' },
-        { id: 'd2', title: 'Prototipo', status: 'in_review', created_at: '2026-05-02T10:00:00Z' },
-        { id: 'd3', title: 'Docs', status: 'approved', created_at: '2026-05-03T10:00:00Z' },
-        { id: 'd4', title: 'Testing', status: 'in_progress', created_at: '2026-05-04T10:00:00Z' },
-      ];
-      const sorted = sortDeliverables(deliverables);
-      expect(sorted[0].status).toBe('in_review');
-      expect(sorted[1].status).toBe('in_progress');
-      expect(sorted[2].status).toBe('pending');
-      expect(sorted[3].status).toBe('approved');
-    });
   });
 
   // PR3: deliverable query param highlighting

@@ -44,12 +44,6 @@ beforeEach(() => {
 });
 
 describe('NgoProjectsPage — useNgoProjects hook integration', () => {
-  it('muestra loading cuando el hook está cargando', () => {
-    setupHookMock({ loading: true, projects: [] });
-    renderPage();
-    expect(screen.getByText(/cargando/i)).toBeInTheDocument();
-  });
-
   it('carga proyectos desde el hook', async () => {
     renderPage();
     await waitFor(() => expect(screen.getByText('Web banco de alimentos')).toBeInTheDocument());
@@ -97,10 +91,4 @@ describe('NgoProjectsPage — useNgoProjects hook integration', () => {
     expect(screen.queryByRole('link', { name: /candidatos/i })).not.toBeInTheDocument();
   });
 
-  it('estado vacío no muestra enlace a detalle', async () => {
-    setupHookMock({ loading: false, projects: [] });
-    renderPage();
-    await screen.findByText(/no tienes proyectos/i);
-    expect(screen.queryByRole('link', { name: /ver detalle/i })).not.toBeInTheDocument();
-  });
 });

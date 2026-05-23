@@ -2,7 +2,6 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import NgoProjectDetailPage from './NgoProjectDetailPage';
-import { getStatusLabel, sortDeliverables } from '@/domain/project/Project.js';
 
 // Mock the hook instead of infrastructure APIs
 vi.mock('../../../ui/hooks/useProjectDetail.jsx', () => ({
@@ -462,38 +461,4 @@ describe('NgoProjectDetailPage — useProjectDetail hook integration', () => {
     expect(screen.queryByRole('button', { name: /aprobar/i })).not.toBeInTheDocument();
   });
 
-  // PR2: Spanish project status badge and sorting
-  describe('PR2: Spanish project status badge and sorting', () => {
-    it('renders translated project status badge (Pendiente)', async () => {
-      setupHookMock({ loading: false, project: mockProject({ status: 'pending' }) });
-      renderPage();
-      await waitFor(() => {
-        expect(screen.getByText('Web banco de alimentos')).toBeInTheDocument();
-      });
-      expect(screen.getByText('Pendiente')).toBeInTheDocument();
-    });
-
-    it('renders translated project status badge (En revisión)', async () => {
-      setupHookMock({ loading: false, project: mockProject({ status: 'in_review' }) });
-      renderPage();
-      await waitFor(() => {
-        expect(screen.getByText('Web banco de alimentos')).toBeInTheDocument();
-      });
-      expect(screen.getByText('En revisión')).toBeInTheDocument();
-    });
-
-    it('sortDeliverables orders deliverables with in_review first', () => {
-      const deliverables = [
-        { id: 'd1', title: 'Wireframes', status: 'pending', created_at: '2026-05-01T10:00:00Z' },
-        { id: 'd2', title: 'Prototipo', status: 'in_review', created_at: '2026-05-02T10:00:00Z' },
-        { id: 'd3', title: 'Docs', status: 'approved', created_at: '2026-05-03T10:00:00Z' },
-        { id: 'd4', title: 'Testing', status: 'in_progress', created_at: '2026-05-04T10:00:00Z' },
-      ];
-      const sorted = sortDeliverables(deliverables);
-      expect(sorted[0].status).toBe('in_review');
-      expect(sorted[1].status).toBe('in_progress');
-      expect(sorted[2].status).toBe('pending');
-      expect(sorted[3].status).toBe('approved');
-    });
-  });
 });

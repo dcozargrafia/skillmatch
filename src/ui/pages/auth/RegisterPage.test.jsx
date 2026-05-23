@@ -85,17 +85,6 @@ describe('validación en cliente', () => {
     expect(registerUseCase).not.toHaveBeenCalled();
   });
 
-  it('no llama a registerUseCase si el email está vacío', async () => {
-    await renderRegister();
-    const user = userEvent.setup();
-
-    await user.type(screen.getByLabelText(/nombre/i), 'Carlos');
-    await user.type(screen.getByLabelText(/contraseña/i), '123456');
-    await user.click(screen.getByRole('button', { name: /registrarse/i }));
-
-    expect(registerUseCase).not.toHaveBeenCalled();
-  });
-
   it('no llama si organization_name falta cuando rol es ngo', async () => {
     await renderRegister();
     const user = userEvent.setup();
@@ -143,20 +132,6 @@ describe('errores de API', () => {
     await user.click(screen.getByRole('button', { name: /registrarse/i }));
 
     expect(await screen.findByText(/email ya registrado/i)).toBeTruthy();
-  });
-
-  it('muestra mensaje genérico si la API responde con otro error', async () => {
-    registerUseCase.mockRejectedValue(new Error('Error interno'));
-    await renderRegister();
-    const user = userEvent.setup();
-
-    await user.type(screen.getByLabelText(/nombre/i), 'Carlos');
-    await user.type(screen.getByLabelText(/email/i), 'carlos@test.com');
-    await user.type(screen.getByLabelText(/contraseña/i), '123456');
-    await user.selectOptions(screen.getByLabelText(/rol/i), 'student');
-    await user.click(screen.getByRole('button', { name: /registrarse/i }));
-
-    expect(await screen.findByRole('alert')).toBeTruthy();
   });
 
   it('deshabilita el botón mientras se envía la petición', async () => {

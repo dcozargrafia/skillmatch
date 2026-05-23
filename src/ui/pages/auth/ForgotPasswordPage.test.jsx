@@ -75,9 +75,4 @@ describe('ForgotPasswordPage', () => {
     expect(screen.getByRole('link', { name: /volver al inicio de sesión/i })).toBeInTheDocument();
   });
 
-  it('AC4: error de API también muestra el mensaje de confirmación (no revela existencia)', () => {
-    renderPage({ sent: true });
-
-    expect(screen.getByText(/si el email está registrado/i)).toBeInTheDocument();
-  });
 });

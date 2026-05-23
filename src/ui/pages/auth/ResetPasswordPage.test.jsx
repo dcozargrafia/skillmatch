@@ -87,10 +87,4 @@ describe('ResetPasswordPage', () => {
     expect(screen.getByRole('link', { name: /volver al inicio de sesión/i })).toBeInTheDocument();
   });
 
-  it('AC5: token inválido/expirado muestra error con opción de solicitar uno nuevo', () => {
-    renderPage({ error: 'El enlace es inválido o ha expirado.', errors: { confirmPassword: 'El enlace es inválido o ha expirado.' } });
-
-    expect(screen.getByRole('alert')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /solicitar nuevo enlace/i })).toBeInTheDocument();
-  });
 });

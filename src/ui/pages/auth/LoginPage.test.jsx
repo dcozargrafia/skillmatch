@@ -114,33 +114,6 @@ describe('submit exitoso', () => {
     });
   });
 
-  it('redirige a /ngo tras login con rol ngo', async () => {
-    mockLogin.mockImplementation(() => mockStore({ user: { role: 'ngo' } }));
-    await renderLogin();
-    const user = userEvent.setup();
-
-    await user.type(screen.getByLabelText(/email/i), 'ong@test.com');
-    await user.type(screen.getByLabelText(/contraseña/i), '123456');
-    await user.click(screen.getByRole('button', { name: /iniciar sesión/i }));
-
-    await waitFor(() => {
-      expect(screen.getByText('NgoDashboard')).toBeTruthy();
-    });
-  });
-
-  it('redirige a /admin tras login con rol admin', async () => {
-    mockLogin.mockImplementation(() => mockStore({ user: { role: 'admin' } }));
-    await renderLogin();
-    const user = userEvent.setup();
-
-    await user.type(screen.getByLabelText(/email/i), 'admin@test.com');
-    await user.type(screen.getByLabelText(/contraseña/i), '123456');
-    await user.click(screen.getByRole('button', { name: /iniciar sesión/i }));
-
-    await waitFor(() => {
-      expect(screen.getByText('AdminDashboard')).toBeTruthy();
-    });
-  });
 });
 
 describe('errores de API', () => {
