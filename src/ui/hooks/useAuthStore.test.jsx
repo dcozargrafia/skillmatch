@@ -8,6 +8,8 @@
  * - logout(): limpia user y redirige a /login
  * - hydrate() exitoso: restaura user desde GET /users/me
  * - hydrate() fallido (401/red): limpia user silenciosamente sin lanzar
+ *
+ * SDD Phase 7: mocks actualizados para usar use cases en lugar de API functions.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -17,26 +19,24 @@ vi.mock('../../application/auth/loginUseCase.js', () => ({
   loginUseCase: vi.fn(),
 }));
 
-vi.mock('../../infrastructure/api/usersApi.js', () => ({
-  getMe: vi.fn(),
+vi.mock('../../application/auth/hydrateUseCase.js', () => ({
+  hydrateUseCase: vi.fn(),
 }));
 
-vi.mock('../../infrastructure/api/authApi.js', () => ({
-  loginRequest: vi.fn(),
-  registerRequest: vi.fn(),
-  logoutRequest: vi.fn(),
+vi.mock('../../application/auth/logoutUseCase.js', () => ({
+  logoutUseCase: vi.fn(),
 }));
 
 const { loginUseCase } = await import('../../application/auth/loginUseCase.js');
-const { getMe } = await import('../../infrastructure/api/usersApi.js');
-const { logoutRequest } = await import('../../infrastructure/api/authApi.js');
+const { hydrateUseCase } = await import('../../application/auth/hydrateUseCase.js');
+const { logoutUseCase } = await import('../../application/auth/logoutUseCase.js');
 const { default: useAuthStore } = await import('./useAuthStore.jsx');
 
 const mockUser = { id: 1, name: 'Ana', email: 'ana@test.com', role: 'student' };
 
 beforeEach(() => {
   vi.clearAllMocks();
-  logoutRequest.mockResolvedValue({});
+  logoutUseCase.mockResolvedValue({});
   useAuthStore.setState({ user: null, isLoading: false });
   delete window.location;
   window.location = { pathname: '/', href: '' };
@@ -83,7 +83,7 @@ describe('login', () => {
 });
 
 describe('logout', () => {
-  it('llama a logoutRequest, limpia el usuario y redirige a /login', async () => {
+  it('llama a logoutUseCase, limpia el usuario y redirige a /login', async () => {
     useAuthStore.setState({ user: mockUser });
     const { result } = renderHook(() => useAuthStore());
 
@@ -91,13 +91,13 @@ describe('logout', () => {
       await result.current.logout();
     });
 
-    expect(logoutRequest).toHaveBeenCalledTimes(1);
+    expect(logoutUseCase).toHaveBeenCalledTimes(1);
     expect(result.current.user).toBeNull();
     expect(window.location.href).toBe('/login');
   });
 
-  it('limpia el usuario y redirige aunque logoutRequest falle', async () => {
-    logoutRequest.mockRejectedValueOnce(new Error('Network Error'));
+  it('limpia el usuario y redirige aunque logoutUseCase falle', async () => {
+    logoutUseCase.mockRejectedValueOnce(new Error('Network Error'));
     useAuthStore.setState({ user: mockUser });
     const { result } = renderHook(() => useAuthStore());
 
@@ -112,7 +112,7 @@ describe('logout', () => {
 
 describe('hydrate', () => {
   it('restaura el usuario si la cookie JWT es válida', async () => {
-    getMe.mockResolvedValue(mockUser);
+    hydrateUseCase.mockResolvedValue(mockUser);
     const { result } = renderHook(() => useAuthStore());
 
     await act(async () => {
@@ -123,8 +123,8 @@ describe('hydrate', () => {
     expect(result.current.isLoading).toBe(false);
   });
 
-  it('limpia el usuario silenciosamente si /users/me falla', async () => {
-    getMe.mockRejectedValue(new Error('401'));
+  it('limpia el usuario silenciosamente si hydrateUseCase falla', async () => {
+    hydrateUseCase.mockRejectedValue(new Error('401'));
     const { result } = renderHook(() => useAuthStore());
     useAuthStore.setState({ user: mockUser });
 
