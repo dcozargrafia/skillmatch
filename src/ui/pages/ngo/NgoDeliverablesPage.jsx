@@ -1,50 +1,39 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import {
-  getDeliverablesByAssignment,
-  createDeliverable,
-  reviewDeliverable,
-} from '../../../infrastructure/api/deliverableApi.js';
+import useProjectDetail from '../../hooks/useProjectDetail.jsx';
+import { DeliverableCard } from '../../components/DeliverableCard.jsx';
+import { sortDeliverables, getDeliverableStatusLabel } from '../../../domain/project/Project.js';
 
 function NgoDeliverablesPage() {
-  const { assignmentId } = useParams();
-  const [deliverables, setDeliverables] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { projectId, assignmentId } = useParams();
+  const { deliverables, loading, error, actions } = useProjectDetail(projectId);
   const [newTitle, setNewTitle] = useState('');
   const [newDescription, setNewDescription] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
-  useEffect(() => {
-    getDeliverablesByAssignment(assignmentId).then((data) => {
-      setDeliverables(data);
-      setLoading(false);
-    });
-  }, [assignmentId]);
-
   async function handleCreate(e) {
     e.preventDefault();
     if (!newTitle.trim()) return;
-    const created = await createDeliverable({
-      assignment_id: assignmentId,
+    const created = await actions.handleCreateDeliverable({
       title: newTitle.trim(),
       description: newDescription,
     });
-    setDeliverables((prev) => [...prev, created]);
-    setNewTitle('');
-    setNewDescription('');
+    if (created) {
+      setNewTitle('');
+      setNewDescription('');
+    }
   }
 
   async function handleReview(id, status) {
     setErrorMsg('');
-    try {
-      const updated = await reviewDeliverable(id, { status });
-      setDeliverables((prev) =>
-        prev.map((d) => (d.id === id ? { ...d, status: updated.status } : d))
-      );
-    } catch {
+    const success = await actions.handleReview(id, status);
+    if (!success) {
       setErrorMsg('Error al revisar el entregable. Intenta de nuevo.');
     }
   }
+
+  // Sort deliverables for display
+  const sortedDeliverables = sortDeliverables(deliverables);
 
   return (
     <div>
@@ -93,30 +82,14 @@ function NgoDeliverablesPage() {
 
       {!loading && (
         <div className="item-list">
-          {deliverables.map((d) => (
-            <div key={d.id} className="card">
-              <div className="card__header">
-                <h3 className="card__title">{d.title}</h3>
-                <span className={`badge${d.status === 'approved' ? ' badge--success' : d.status === 'rejected' ? ' badge--error' : d.status === 'in_review' ? ' badge--warning' : ''}`}>
-                  {d.status}
-                </span>
-              </div>
-              {d.description && (
-                <div className="card__body"><p>{d.description}</p></div>
-              )}
-              {d.status === 'in_review' && (
-                <div className="card__footer">
-                  <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                    <button className="btn btn--primary btn--sm" onClick={() => handleReview(d.id, 'approved')}>
-                      Aprobar
-                    </button>
-                    <button className="btn btn--danger btn--sm" onClick={() => handleReview(d.id, 'rejected')}>
-                      Rechazar
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+          {sortedDeliverables.map((d) => (
+            <DeliverableCard
+              key={d.id}
+              deliverable={d}
+              variant="ngo"
+              onApprove={(id) => handleReview(id, 'approved')}
+              onReject={(id) => handleReview(id, 'rejected')}
+            />
           ))}
         </div>
       )}

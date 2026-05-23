@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import useStudentAssignment from '../../hooks/useStudentAssignment.jsx';
 import useStudentCertificate from '../../hooks/useStudentCertificate.jsx';
 import useStudentReview from '../../hooks/useStudentReview.jsx';
@@ -8,6 +8,8 @@ import { getStatusLabel, getProjectStatusMessage, sortDeliverables } from '../..
 
 function StudentAssignmentPage() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const highlightedDeliverableId = searchParams.get('deliverable');
   const {
     assignment,
     deliverables,
@@ -129,6 +131,9 @@ function StudentAssignmentPage() {
               key={d.id}
               deliverable={d}
               variant="student"
+              highlighted={highlightedDeliverableId === d.id}
+              showViewDetails={true}
+              onViewDetails={() => {}}
             />
           ))}
         </div>

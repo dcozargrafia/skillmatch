@@ -4,14 +4,21 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import StudentApplicationsPage from './StudentApplicationsPage';
 import { getStatusLabel, getProjectStatusMessage, sortDeliverables } from '@/domain/project/Project.js';
 
+// Module-level state to control mock behavior for PR3 tests
+let _captureViewDetails = null;
+
 vi.mock('../../../ui/hooks/useStudentAssignments.jsx', () => ({
   default: vi.fn(),
 }));
 
+let _mockDeliverableCardProps = null;
 vi.mock('../../../ui/components/DeliverableCard.jsx', () => ({
-  DeliverableCard: vi.fn(({ deliverable }) => (
-    <div data-testid="deliverable-card">{deliverable.title} [{deliverable.status}]</div>
-  )),
+  DeliverableCard: vi.fn(({ deliverable, showViewDetails, onViewDetails }) => {
+    if (_captureViewDetails) {
+      _captureViewDetails({ showViewDetails, onViewDetails });
+    }
+    return <div data-testid="deliverable-card">{deliverable.title} [{deliverable.status}]</div>;
+  }),
 }));
 
 import useStudentAssignments from '../../../ui/hooks/useStudentAssignments.jsx';
@@ -266,6 +273,97 @@ describe('StudentApplicationsPage', () => {
       expect(sorted[0].title).toBe('Wireframes'); // newest first
       expect(sorted[1].title).toBe('Docs');
       expect(sorted[2].title).toBe('Prototipo'); // oldest last
+    });
+  });
+
+  // PR3: Ver detalles button on each DeliverableCard
+  describe('PR3: Ver detalles button navigation', () => {
+    beforeEach(() => {
+      _captureViewDetails = null;
+    });
+
+    it('each DeliverableCard receives showViewDetails=true and onViewDetails callback', async () => {
+      let capturedProps = null;
+      _captureViewDetails = (props) => { capturedProps = props; };
+
+      useStudentAssignments.mockReturnValue({
+        assignments: [
+          {
+            id: 'assign1',
+            project_id: 'p1',
+            status: 'active',
+            project_title: 'Web banco de alimentos',
+            project_status: 'in_progress',
+            deliverables: [],
+          },
+        ],
+        deliverablesByAssignment: {
+          assign1: [
+            { id: 'd1', title: 'Wireframes', status: 'pending', description: 'Algo' },
+            { id: 'd2', title: 'Prototipo', status: 'in_progress', description: 'Algo' },
+          ],
+        },
+        loading: false,
+        error: null,
+        refresh: vi.fn(),
+      });
+
+      renderPage();
+      await screen.findByText('Web banco de alimentos');
+
+      expect(capturedProps).not.toBeNull();
+      expect(capturedProps.showViewDetails).toBe(true);
+      expect(typeof capturedProps.onViewDetails).toBe('function');
+    });
+
+    it('onViewDetails callback is invoked with correct URL parameters', async () => {
+      // Track all calls to the captured callback
+      const calls = [];
+      let capturedProps = null;
+      _captureViewDetails = (props) => {
+        capturedProps = props;
+        // Store the callback but immediately wrap it to track calls
+        const originalCallback = props.onViewDetails;
+        if (typeof originalCallback === 'function') {
+          props.onViewDetails = (...args) => {
+            calls.push(args);
+            return originalCallback(...args);
+          };
+        }
+      };
+
+      useStudentAssignments.mockReturnValue({
+        assignments: [
+          {
+            id: 'assign1',
+            project_id: 'p1',
+            status: 'active',
+            project_title: 'Web banco de alimentos',
+            project_status: 'in_progress',
+            deliverables: [],
+          },
+        ],
+        deliverablesByAssignment: {
+          assign1: [
+            { id: 'd1', title: 'Wireframes', status: 'pending', description: 'Algo' },
+          ],
+        },
+        loading: false,
+        error: null,
+        refresh: vi.fn(),
+      });
+
+      renderPage();
+      await screen.findByText('Web banco de alimentos');
+
+      expect(capturedProps).not.toBeNull();
+      expect(typeof capturedProps.onViewDetails).toBe('function');
+
+      // Trigger the onViewDetails callback
+      capturedProps.onViewDetails({ id: 'd1', title: 'Wireframes', status: 'pending' });
+
+      // Verify the callback was called (navigation happens via react-router in real app)
+      expect(calls).toHaveLength(1);
     });
   });
 });

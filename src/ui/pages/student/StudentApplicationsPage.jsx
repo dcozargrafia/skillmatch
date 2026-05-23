@@ -1,15 +1,20 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import useStudentAssignments from '../../hooks/useStudentAssignments.jsx';
 import { DeliverableCard } from '../../components/DeliverableCard.jsx';
 import { getStatusLabel, getProjectStatusMessage, sortDeliverables } from '../../../domain/project/Project.js';
 
 function StudentApplicationsPage() {
+  const navigate = useNavigate();
   const {
     assignments,
     deliverablesByAssignment,
     loading,
     error,
   } = useStudentAssignments();
+
+  function handleViewDetails(deliverable, assignmentId) {
+    navigate(`/student/assignments/${assignmentId}?deliverable=${deliverable.id}`);
+  }
 
   if (loading) return <p className="loading">Cargando...</p>;
 
@@ -55,6 +60,8 @@ function StudentApplicationsPage() {
                     key={d.id}
                     deliverable={d}
                     variant="student"
+                    showViewDetails={true}
+                    onViewDetails={() => handleViewDetails(d, assignment.id)}
                   />
                 ))}
               </div>

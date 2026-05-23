@@ -261,4 +261,66 @@ describe('DeliverableCard', () => {
       expect(screen.queryByText(/这是我的提交说明/)).not.toBeInTheDocument();
     });
   });
+
+  // PR3: Ver detalles button
+  describe('PR3: Ver detalles button (onViewDetails)', () => {
+    const mockWithDate = {
+      id: 'del-1',
+      title: 'First Deliverable',
+      description: 'Build the initial wireframes',
+      status: 'pending',
+      created_at: '2026-05-10T10:00:00Z',
+    };
+
+    it('renders Ver detalles button when showViewDetails=true and onViewDetails provided', () => {
+      const handleViewDetails = vi.fn();
+      render(
+        <DeliverableCard
+          {...defaultProps}
+          deliverable={mockWithDate}
+          showViewDetails={true}
+          onViewDetails={handleViewDetails}
+        />
+      );
+      expect(screen.getByRole('button', { name: /ver detalles/i })).toBeInTheDocument();
+    });
+
+    it('calls onViewDetails with the deliverable when Ver detalles is clicked', () => {
+      const handleViewDetails = vi.fn();
+      render(
+        <DeliverableCard
+          {...defaultProps}
+          deliverable={mockWithDate}
+          showViewDetails={true}
+          onViewDetails={handleViewDetails}
+        />
+      );
+      fireEvent.click(screen.getByRole('button', { name: /ver detalles/i }));
+      expect(handleViewDetails).toHaveBeenCalledWith(mockWithDate);
+    });
+
+    it('does NOT render Ver detalles button when showViewDetails is false', () => {
+      const handleViewDetails = vi.fn();
+      render(
+        <DeliverableCard
+          {...defaultProps}
+          deliverable={mockWithDate}
+          showViewDetails={false}
+          onViewDetails={handleViewDetails}
+        />
+      );
+      expect(screen.queryByRole('button', { name: /ver detalles/i })).not.toBeInTheDocument();
+    });
+
+    it('does NOT render Ver detalles button when onViewDetails is not provided', () => {
+      render(
+        <DeliverableCard
+          {...defaultProps}
+          deliverable={mockWithDate}
+          showViewDetails={true}
+        />
+      );
+      expect(screen.queryByRole('button', { name: /ver detalles/i })).not.toBeInTheDocument();
+    });
+  });
 });
