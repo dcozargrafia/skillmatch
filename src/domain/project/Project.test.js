@@ -312,5 +312,84 @@ describe('project domain helpers', () => {
       expect(result.values.deadline).toBe(null)
       expect(result.values.modality).toBe('remote')
     })
+
+    it('valid skills array passes validation with no errors.skills', () => {
+      const input = {
+        title: 'Valid Title',
+        skills: [
+          { skill_id: 'skill-1', required_level: 'basic' },
+          { skill_id: 'skill-2', required_level: 'intermediate' },
+          { skill_id: 'skill-3', required_level: 'advanced' },
+        ],
+      }
+      const result = validateProject(input)
+      expect(result.errors.skills).toBeUndefined()
+      expect(result.values.skills).toBeUndefined()
+    })
+
+    it('invalid required_level (e.g. "expert") returns errors.skills', () => {
+      const input = {
+        title: 'Valid Title',
+        skills: [{ skill_id: 'skill-1', required_level: 'expert' }],
+      }
+      const result = validateProject(input)
+      expect(result.errors.skills).toBeDefined()
+      expect(Array.isArray(result.errors.skills)).toBe(true)
+      expect(result.errors.skills.length).toBeGreaterThan(0)
+      expect(result.errors.skills.some((e) => e.includes('nivel inválido'))).toBe(true)
+    })
+
+    it('empty skills array passes with no errors', () => {
+      const input = {
+        title: 'Valid Title',
+        skills: [],
+      }
+      const result = validateProject(input)
+      expect(result.errors.skills).toBeUndefined()
+      expect(result.values.skills).toBeUndefined()
+    })
+
+    it('entry missing skill_id returns errors.skills', () => {
+      const input = {
+        title: 'Valid Title',
+        skills: [{ required_level: 'basic' }],
+      }
+      const result = validateProject(input)
+      expect(result.errors.skills).toBeDefined()
+      expect(result.errors.skills.some((e) => e.includes('skill_id'))).toBe(true)
+    })
+
+    it('entry missing required_level returns errors.skills', () => {
+      const input = {
+        title: 'Valid Title',
+        skills: [{ skill_id: 'skill-1' }],
+      }
+      const result = validateProject(input)
+      expect(result.errors.skills).toBeDefined()
+      expect(result.errors.skills.some((e) => e.includes('required_level'))).toBe(true)
+    })
+
+    it('skills is undefined passes with no error (optional field)', () => {
+      const input = {
+        title: 'Valid Title',
+        skills: undefined,
+      }
+      const result = validateProject(input)
+      expect(result.errors.skills).toBeUndefined()
+      expect(result.values.skills).toBeUndefined()
+    })
+
+    it('Spanish levels (básico, intermedio, avanzado) are valid', () => {
+      const input = {
+        title: 'Valid Title',
+        skills: [
+          { skill_id: 'skill-1', required_level: 'básico' },
+          { skill_id: 'skill-2', required_level: 'intermedio' },
+          { skill_id: 'skill-3', required_level: 'avanzado' },
+        ],
+      }
+      const result = validateProject(input)
+      expect(result.errors.skills).toBeUndefined()
+    })
   })
 })

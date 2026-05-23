@@ -11,6 +11,8 @@
  *
  * Sin dependencias de React, Axios ni infraestructura.
  */
+import { isSkillLevelValid } from '../skill/Skill.js'
+
 export const VALID_TRANSITIONS = {
   pending: ['assigned', 'cancelled'],
   assigned: ['in_progress', 'cancelled'],
@@ -115,7 +117,7 @@ export function sortDeliverables(deliverables = []) {
   })
 }
 
-export function validateProject({ title, description, objectives, estimated_hours, deadline, modality }) {
+export function validateProject({ title, description, objectives, estimated_hours, deadline, modality, skills }) {
   const values = {
     title: (title ?? '').trim(),
     description: typeof description === 'string' ? description.trim() : description,
@@ -127,6 +129,24 @@ export function validateProject({ title, description, objectives, estimated_hour
   const errors = {}
   if (!values.title) {
     errors.title = 'El título es obligatorio.'
+  }
+  if (skills != null && Array.isArray(skills) && skills.length > 0) {
+    const skillErrors = []
+    for (const entry of skills) {
+      const entryErrors = []
+      if (!entry || typeof entry.skill_id !== 'string' || !entry.skill_id.trim()) {
+        entryErrors.push('skill_id: debe ser un texto no vacío')
+      }
+      if (!entry || !isSkillLevelValid(entry.required_level)) {
+        entryErrors.push('required_level: nivel inválido (debe ser basic, intermediate o advanced)')
+      }
+      if (entryErrors.length > 0) {
+        skillErrors.push(entryErrors.join('; '))
+      }
+    }
+    if (skillErrors.length > 0) {
+      errors.skills = skillErrors
+    }
   }
   return { values, errors }
 }

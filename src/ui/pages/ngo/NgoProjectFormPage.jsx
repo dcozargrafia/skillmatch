@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import useNgoProjectForm from '../../hooks/useNgoProjectForm.jsx';
+import { SkillSelector } from '../../components/SkillSelector.jsx';
 
 const MODALITIES = ['remoto', 'presencial', 'híbrido'];
 
 function NgoProjectFormPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { project, loading, error, mode, handleSubmit: onSubmit } = useNgoProjectForm(id);
+  const { project, skills, loading, error, mode, handleSubmit: onSubmit } = useNgoProjectForm(id);
 
   const [title, setTitle] = useState(project?.title ?? '');
   const [description, setDescription] = useState(project?.description ?? '');
@@ -16,6 +17,14 @@ function NgoProjectFormPage() {
   const [deadline, setDeadline] = useState(project?.deadline ?? '');
   const [modality, setModality] = useState(project?.modality ?? MODALITIES[0]);
   const [titleError, setTitleError] = useState('');
+  const [selectedSkills, setSelectedSkills] = useState([]);
+
+  // Sync selectedSkills when project loads in edit mode
+  useEffect(() => {
+    if (project?.skills) {
+      setSelectedSkills(project.skills.map(({ skill_id, required_level }) => ({ skill_id, required_level })));
+    }
+  }, [project]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -33,9 +42,12 @@ function NgoProjectFormPage() {
       estimated_hours: estimatedHours ? Number(estimatedHours) : undefined,
       deadline: deadline || undefined,
       modality,
+      ...(selectedSkills.length > 0 ? { skills: selectedSkills } : {}),
     };
 
-    const result = await onSubmit(data);
+    const result = mode === 'edit'
+      ? await onSubmit(data, selectedSkills.length > 0 ? selectedSkills : undefined)
+      : await onSubmit(data);
     if (result) {
       navigate(`/ngo/projects/${result.id}`);
     }
@@ -124,6 +136,12 @@ function NgoProjectFormPage() {
           {error && (
             <div className="alert alert--error" role="alert">{error}</div>
           )}
+
+          <SkillSelector
+            skills={skills}
+            selectedSkills={selectedSkills}
+            onChange={setSelectedSkills}
+          />
 
           <button type="submit" className="btn btn--primary">Guardar</button>
         </form>

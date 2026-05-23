@@ -90,6 +90,36 @@ describe('modo create (sin projectId)', () => {
     expect(result.current.error).toBe('Error al cargar formulario.');
     expect(result.current.loading).toBe(false);
   });
+
+  it('4.3: create mode incluye skills en data para createProjectUseCase', async () => {
+    getProjectFormUseCase.mockResolvedValue({ project: null, skills: mockSkills });
+    const createdProject = { id: 'proj-new', title: 'Nuevo' };
+    createProjectUseCase.mockResolvedValue(createdProject);
+
+    const { result } = renderHook(() => useNgoProjectForm(null));
+
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0));
+    });
+
+    const submitData = {
+      title: 'Nuevo Proyecto',
+      description: 'Descripción',
+      objectives: 'Objetivos',
+      estimated_hours: 20,
+      deadline: '2025-12-01',
+      modality: 'remoto',
+      skills: [{ skill_id: 's1', required_level: 'basic' }],
+    };
+
+    let submittedProject;
+    await act(async () => {
+      submittedProject = await result.current.handleSubmit(submitData);
+    });
+
+    expect(createProjectUseCase).toHaveBeenCalledWith(submitData);
+    expect(submittedProject).toEqual(createdProject);
+  });
 });
 
 describe('modo edit (con projectId)', () => {
@@ -159,6 +189,29 @@ describe('handleSubmit', () => {
     });
 
     expect(updateProjectUseCase).toHaveBeenCalledWith('proj-1', submitData, undefined, mockProject);
+    expect(submittedProject).toEqual(updatedProject);
+  });
+
+  it('4.3: edit: handleSubmit recibe skills como segundo param y los pasa a updateProjectUseCase', async () => {
+    getProjectFormUseCase.mockResolvedValue({ project: mockProject, skills: mockSkills });
+    const updatedProject = { id: 'proj-1', title: 'Actualizado' };
+    updateProjectUseCase.mockResolvedValue(updatedProject);
+
+    const { result } = renderHook(() => useNgoProjectForm('proj-1'));
+
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0));
+    });
+
+    const submitData = { title: 'Actualizado', description: 'Desc', objectives: 'Obj', modality: 'remoto' };
+    const skillsData = [{ skill_id: 's1', required_level: 'intermediate' }];
+
+    let submittedProject;
+    await act(async () => {
+      submittedProject = await result.current.handleSubmit(submitData, skillsData);
+    });
+
+    expect(updateProjectUseCase).toHaveBeenCalledWith('proj-1', submitData, undefined, mockProject, skillsData);
     expect(submittedProject).toEqual(updatedProject);
   });
 
