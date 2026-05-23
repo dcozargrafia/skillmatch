@@ -1,5 +1,6 @@
 import useAdminDashboard from '../../hooks/useAdminDashboard.jsx';
 import { PageHeader } from '../../components/PageHeader.jsx';
+import { EmptyState } from '../../components/EmptyState.jsx';
 
 const CATEGORIES = ['Desarrollo', 'Diseno', 'CMS', 'Marketing'];
 
@@ -122,9 +123,7 @@ function AdminDashboardPage() {
         </div>
 
         {ngos.length === 0 && (
-          <div className="empty-state">
-            <p className="empty-state__text">No hay ONGs pendientes de verificación.</p>
-          </div>
+          <EmptyState message="No hay ONGs pendientes de verificación." />
         )}
 
         <div className="item-list">

@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import useStudentAssignments from '../../hooks/useStudentAssignments.jsx';
 import { DeliverableCard } from '../../components/DeliverableCard.jsx';
 import { PageHeader } from '../../components/PageHeader.jsx';
+import { EmptyState } from '../../components/EmptyState.jsx';
 import { getStatusLabel, getProjectStatusMessage, sortDeliverables } from '../../../domain/project/Project.js';
 
 function StudentApplicationsPage() {
@@ -23,9 +24,7 @@ function StudentApplicationsPage() {
     return (
       <div>
         <PageHeader title="Proyectos asignados" />
-        <div className="empty-state">
-          <p className="empty-state__text">No tienes proyectos asignados todavía.</p>
-        </div>
+        <EmptyState message="No tienes proyectos asignados todavía." />
       </div>
     );
   }

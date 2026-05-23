@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import useStudentProjects from '../../hooks/useStudentProjects.jsx';
 import { PageHeader } from '../../components/PageHeader.jsx';
+import { EmptyState } from '../../components/EmptyState.jsx';
 
 function ProjectsListPage() {
   const {
@@ -36,9 +37,7 @@ function ProjectsListPage() {
       {loading && <p className="loading">Cargando...</p>}
 
       {!loading && projects.length === 0 && (
-        <div className="empty-state">
-          <p className="empty-state__text">No hay proyectos que coincidan con los filtros.</p>
-        </div>
+        <EmptyState message="No hay proyectos que coincidan con los filtros." />
       )}
 
       {!loading && (
