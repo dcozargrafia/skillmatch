@@ -20,8 +20,10 @@ export async function getProjectDetailUseCase(projectId) {
 
   let assignment = null;
   try {
-    const assignments = await getAssignmentsByProject(projectId);
-    assignment = assignments.length > 0 ? assignments[0] : null;
+    const result = await getAssignmentsByProject(projectId);
+    // The API returns a single assignment object, not an array.
+    // Be defensive: handle both object and array responses.
+    assignment = Array.isArray(result) ? (result[0] ?? null) : (result ?? null);
   } catch (err) {
     // 404 on assignment is not a failure — project may not have one yet
     if (err?.response?.status === 404) {

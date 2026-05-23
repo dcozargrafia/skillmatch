@@ -33,14 +33,14 @@ beforeEach(() => {
 });
 
 describe('getProjectDetailUseCase', () => {
-  it('loads project + assignment + deliverables + applications and returns them', async () => {
+  it('loads project + assignment + deliverables + applications and returns them (API returns object)', async () => {
     const mockProject = { id: 'p1', title: 'Test Project', status: 'in_progress' };
     const mockAssignment = { id: 'a1', project_id: 'p1' };
     const mockDeliverables = [{ id: 'd1', status: 'approved' }];
     const mockApplications = [{ id: 'app1', student_name: 'Alice' }];
 
     getProjectById.mockResolvedValue(mockProject);
-    getAssignmentsByProject.mockResolvedValue([mockAssignment]);
+    getAssignmentsByProject.mockResolvedValue(mockAssignment);
     getDeliverablesByAssignment.mockResolvedValue(mockDeliverables);
     getApplicationsByProject.mockResolvedValue(mockApplications);
 
@@ -54,10 +54,24 @@ describe('getProjectDetailUseCase', () => {
     });
   });
 
-  it('returns assignment: null when no assignment exists (404 or empty)', async () => {
+  it('handles array response from assignment API (backward compatible)', async () => {
+    const mockProject = { id: 'p1', title: 'Test Project', status: 'in_progress' };
+    const mockAssignment = { id: 'a1', project_id: 'p1' };
+
+    getProjectById.mockResolvedValue(mockProject);
+    getAssignmentsByProject.mockResolvedValue([mockAssignment]);
+    getDeliverablesByAssignment.mockResolvedValue([]);
+    getApplicationsByProject.mockResolvedValue([]);
+
+    const result = await getProjectDetailUseCase('p1');
+
+    expect(result.assignment).toEqual(mockAssignment);
+  });
+
+  it('returns assignment: null when no assignment exists (null response)', async () => {
     const mockProject = { id: 'p1', title: 'Test Project', status: 'pending' };
     getProjectById.mockResolvedValue(mockProject);
-    getAssignmentsByProject.mockResolvedValue([]); // no assignment
+    getAssignmentsByProject.mockResolvedValue(null);
     getDeliverablesByAssignment.mockResolvedValue([]);
     getApplicationsByProject.mockResolvedValue([]);
 

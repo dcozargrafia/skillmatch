@@ -15,6 +15,7 @@
 | Bug de Skills en Student | 4 bugs interrelacionados: niveles inglés/español, UI muerta, stale closure, availability vs disponibilidad | #63 → #64 |
 | Bug de crear proyecto — "Name is required" | `createProjectUseCase` usaba `validateNgoProfile` en vez de validador de proyecto. Creado `validateProject` en `Project.js` | #66 |
 | Skills requeridas al crear proyecto ONG | SkillSelector con checkbox + level select agrupado por categoría, validateProject con skills, updateProjectUseCase con 5to param, integración en NgoProjectFormPage | #68 |
+| ONG entregables — página huérfana eliminada | NgoDeliverablesPage era duplicado sin sidebar link, sin guards de dominio, con terminología inconsistente. Eliminada junto con su ruta. Gestión de entregables ya funciona en NgoProjectDetailPage. | #69 |
 
 ---
 
@@ -22,19 +23,11 @@
 
 ### 🔴 ONG — No puede añadir/gestionar entregables
 
-- **Problema**: Desde la vista de ONG no hay manera de añadir o gestionar entregables de un proyecto. No está claro si falta ruta/sidebar link, si `NgoDeliverablesPage.jsx` es accesible, o si hay que integrar entregables en `NgoProjectDetailPage`.
-- **Violación hexagonal**: `NgoDeliverablesPage.jsx` importa directamente de `infrastructure/api/deliverableApi.js` en vez de usar hook + use case.
-- **Necesita SDD explore primero** para investigar el estado actual de rutas, sidebar y accesibilidad.
+- **Resuelto**: La gestión de entregables ya funciona en `NgoProjectDetailPage` con guards de dominio correctos (readOnly, hasActiveDeliverable, isTerminal). La página huérfana `NgoDeliverablesPage` era un duplicado inferior sin link en el sidebar — eliminada en PR #69.
+- **Violación hexagonal**: Resuelta — al eliminar `NgoDeliverablesPage`, ya no queda ningún import de `infrastructure/` en la capa UI que viole la regla de dependencia.
+- **Restante**: Verificar que la UX de gestionar entregables desde `NgoProjectDetailPage` sea suficiente y descubrible para el usuario ONG. ¿Hace falta un link explícito o indicador visual en el sidebar o la lista de proyectos?
 
-**Archivos clave**:
-- `src/ui/pages/ngo/NgoDeliverablesPage.jsx` — existe pero viola hexagonal
-- `src/ui/pages/ngo/NgoProjectDetailPage.jsx` — ya tiene crear/revisar entregables
-- `src/ui/layouts/NgoLayout.jsx` — links del sidebar
-- `src/ui/router/AppRouter.jsx` — rutas ONG
-- `src/application/deliverable/` — use cases existentes
-- `src/infrastructure/api/deliverableApi.js` — API de entregables
-
-**Prioridad**: Alta — la ONG no puede gestionar entregables.
+**Prioridad**: Alta — la funcionalidad existe pero quizás no es suficientemente visible.
 
 ---
 
@@ -72,7 +65,7 @@
 
 ## Orden recomendado
 
-1. **ONG entregables** — investigar accesibilidad + refactor hexagonal. SDD explore primero.
+1. **ONG entregables — visibilidad** — verificar si la gestión de entregables en NgoProjectDetailPage es suficientemente visible/descubrible para la ONG.
 2. **ONG gestión activa de proyectos** — SDD para UX.
 3. **Reseñas** — SDD para flujo completo.
 4. **Pulido transversal** — al final, sin SDD probablemente.
@@ -82,7 +75,7 @@
 ## Notas para la defensa del PFG
 
 - Arquitectura hexagonal implementada en las 3 áreas (NGO, Student, Admin/Auth) con 3 PRs encadenados cada una.
-- 711 tests, 0 imports de `infrastructure/` en la capa UI (salvo `NgoDeliverablesPage.jsx` — pendiente refactor), regla de dependencia verificable.
+- 703 tests, 0 imports de `infrastructure/` en la capa UI, regla de dependencia verificable. (La excepción `NgoDeliverablesPage.jsx` fue eliminada en PR #69.)
 - Los 8 archivos de domain tienen JSDoc documentando propósito y restricción de pureza.
 - `Review.js` tiene una dependencia implícita en la forma del error de Axios (`error.response.status`).
 - `Project.js` es el archivo más crítico del domain — contiene la máquina de estados completa del ciclo de vida + validación de proyecto con skills.
