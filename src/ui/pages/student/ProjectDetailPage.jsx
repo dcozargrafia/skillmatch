@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom';
 import useStudentProjectDetail from '../../hooks/useStudentProjectDetail.jsx';
 import { PageHeader } from '../../components/PageHeader.jsx';
+import { AlertBlock } from '../../components/AlertBlock.jsx';
 
 function ProjectDetailPage() {
   const { id } = useParams();
@@ -64,15 +65,15 @@ function ProjectDetailPage() {
       )}
 
       {error && (
-        <div className="alert alert--error" role="alert" style={{ marginBottom: 'var(--space-4)' }}>
+        <AlertBlock variant="error" style={{ marginBottom: 'var(--space-4)' }}>
           {error}
-        </div>
+        </AlertBlock>
       )}
 
       {successMessage && (
-        <div className="alert alert--success" role="status" style={{ marginBottom: 'var(--space-4)' }}>
+        <AlertBlock variant="success" style={{ marginBottom: 'var(--space-4)' }}>
           {successMessage}
-        </div>
+        </AlertBlock>
       )}
 
       {project.status === 'pending' && (

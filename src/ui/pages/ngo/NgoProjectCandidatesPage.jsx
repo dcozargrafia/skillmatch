@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getApplicationsByProject, updateApplicationStatus } from '../../../infrastructure/api/applicationApi.js';
 import { PageHeader } from '../../components/PageHeader.jsx';
+import { AlertBlock } from '../../components/AlertBlock.jsx';
 
 function NgoProjectCandidatesPage() {
   const { id } = useParams();
@@ -37,9 +38,9 @@ function NgoProjectCandidatesPage() {
       <PageHeader title="Candidatos del proyecto" />
 
       {errorMsg && (
-        <div className="alert alert--error" role="alert" style={{ marginBottom: 'var(--space-5)' }}>
+        <AlertBlock variant="error" style={{ marginBottom: 'var(--space-5)' }}>
           {errorMsg}
-        </div>
+        </AlertBlock>
       )}
 
       {loading && <p className="loading">Cargando...</p>}

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import useNgoProjectForm from '../../hooks/useNgoProjectForm.jsx';
 import { SkillSelector } from '../../components/SkillSelector.jsx';
 import { PageHeader } from '../../components/PageHeader.jsx';
+import { AlertBlock } from '../../components/AlertBlock.jsx';
 
 const MODALITIES = ['remoto', 'presencial', 'híbrido'];
 
@@ -133,7 +134,7 @@ function NgoProjectFormPage() {
           </div>
 
           {error && (
-            <div className="alert alert--error" role="alert">{error}</div>
+            <AlertBlock variant="error">{error}</AlertBlock>
           )}
 
           <SkillSelector

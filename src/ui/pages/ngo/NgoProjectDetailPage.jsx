@@ -13,6 +13,7 @@ import {
 import { canCancelProject } from '../../../domain/ngo/Ngo.js';
 import { PageHeader } from '../../components/PageHeader.jsx';
 import { EmptyState } from '../../components/EmptyState.jsx';
+import { AlertBlock } from '../../components/AlertBlock.jsx';
 
 const REVIEW_STATUSES = ['in_review'];
 
@@ -60,9 +61,9 @@ function NgoProjectDetailPage() {
 
   if (error && !project) {
     return (
-      <div className="alert alert--error" role="alert">
+      <AlertBlock variant="error">
         {error}
-      </div>
+      </AlertBlock>
     );
   }
 
@@ -86,9 +87,9 @@ function NgoProjectDetailPage() {
   return (
     <div>
       {error && (
-        <div className="alert alert--error" role="alert" style={{ marginBottom: 'var(--space-5)' }}>
+        <AlertBlock variant="error" style={{ marginBottom: 'var(--space-5)' }}>
           {error}
-        </div>
+        </AlertBlock>
       )}
 
       <PageHeader title={project.title} subtitle={project.description}>

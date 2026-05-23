@@ -1,6 +1,7 @@
 import useAdminDashboard from '../../hooks/useAdminDashboard.jsx';
 import { PageHeader } from '../../components/PageHeader.jsx';
 import { EmptyState } from '../../components/EmptyState.jsx';
+import { AlertBlock } from '../../components/AlertBlock.jsx';
 
 const CATEGORIES = ['Desarrollo', 'Diseno', 'CMS', 'Marketing'];
 
@@ -37,9 +38,9 @@ function AdminDashboardPage() {
       <PageHeader title="Panel de administración" />
 
       {error && (
-        <div className="alert alert--error" role="alert" style={{ marginBottom: 'var(--space-4)' }}>
+        <AlertBlock variant="error" style={{ marginBottom: 'var(--space-4)' }}>
           {error}
-        </div>
+        </AlertBlock>
       )}
 
       {/* Diálogo de confirmación de eliminación */}
@@ -69,9 +70,9 @@ function AdminDashboardPage() {
         </div>
 
         {skillError && (
-          <div className="alert alert--error" role="alert" style={{ marginBottom: 'var(--space-4)' }}>
+          <AlertBlock variant="error" style={{ marginBottom: 'var(--space-4)' }}>
             {skillError}
-          </div>
+          </AlertBlock>
         )}
 
         <div className="card card--elevated" style={{ maxWidth: '560px', marginBottom: 'var(--space-6)' }}>

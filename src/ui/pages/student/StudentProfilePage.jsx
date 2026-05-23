@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import useStudentProfile from '../../hooks/useStudentProfile.jsx';
 import { PageHeader } from '../../components/PageHeader.jsx';
+import { AlertBlock } from '../../components/AlertBlock.jsx';
 
 /** Opciones de nivel: valor en inglés (matching API) → label en español (display). */
 const LEVEL_OPTIONS = [
@@ -26,7 +27,7 @@ function StudentProfilePage() {
 
   const [newSkillLevel, setNewSkillLevel] = useState(DEFAULT_LEVEL);
 
-  if (error && !profile) return <div className="alert alert--error">{error}</div>;
+  if (error && !profile) return <AlertBlock variant="error">{error}</AlertBlock>;
   if (!profile) return <p className="loading">Cargando...</p>;
 
   return (
@@ -156,8 +157,8 @@ function ProfileForm({ initialDisponibilidad, initialPortfolioUrl, onSave, succe
           />
         </div>
 
-        {successMessage && <div className="alert alert--success" role="status">{successMessage}</div>}
-        {errorMessage && !errorMessage.includes('cargar') && <div className="alert alert--error" role="alert">{errorMessage}</div>}
+        {successMessage && <AlertBlock variant="success">{successMessage}</AlertBlock>}
+        {errorMessage && !errorMessage.includes('cargar') && <AlertBlock variant="error">{errorMessage}</AlertBlock>}
       </div>
       <div className="card__footer">
         <button type="button" className="btn btn--primary" onClick={handleSubmit}>

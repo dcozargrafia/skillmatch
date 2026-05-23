@@ -3,6 +3,7 @@ import { useNavigate, Navigate, Link } from 'react-router-dom';
 import useAuthStore from '../../hooks/useAuthStore';
 import { ROLE_HOME } from '../../router/AppRouter';
 import { isNetworkError } from '../../../domain/user/User.js';
+import { AlertBlock } from '../../components/AlertBlock.jsx';
 
 function LoginPage() {
   const user = useAuthStore((s) => s.user);
@@ -52,9 +53,9 @@ function LoginPage() {
         <h1 className="auth-card__title">Iniciar sesión</h1>
 
         {offline && (
-          <div className="alert alert--warning" role="status">
+          <AlertBlock variant="warning">
             Sin conexión con el servidor. Comprueba que el backend esté activo.
-          </div>
+          </AlertBlock>
         )}
 
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
@@ -83,7 +84,7 @@ function LoginPage() {
           </div>
 
           {error && (
-            <div className="alert alert--error" role="alert">{error}</div>
+            <AlertBlock variant="error">{error}</AlertBlock>
           )}
 
           <button type="submit" className="btn btn--primary" disabled={isLoading}>

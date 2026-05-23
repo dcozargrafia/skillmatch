@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import useNgoProfile from '../../hooks/useNgoProfile.jsx';
 import { PageHeader } from '../../components/PageHeader.jsx';
+import { AlertBlock } from '../../components/AlertBlock.jsx';
 
 function NgoProfilePage() {
   const { profile, loading, error, successMessage, handleSave } = useNgoProfile();
@@ -25,7 +26,7 @@ function NgoProfilePage() {
 
   if (loading) return <p className="loading">Cargando...</p>;
 
-  if (error && !profile) return <div className="alert alert--error">{error}</div>;
+  if (error && !profile) return <AlertBlock variant="error">{error}</AlertBlock>;
 
   if (!profile) return null;
 
@@ -41,9 +42,9 @@ function NgoProfilePage() {
       </PageHeader>
 
       {!ngo.verified && (
-        <div className="alert alert--warning" role="status" style={{ marginBottom: 'var(--space-6)' }}>
+        <AlertBlock variant="warning" style={{ marginBottom: 'var(--space-6)' }}>
           Tu organización está pendiente de verificación por el administrador.
-        </div>
+        </AlertBlock>
       )}
 
       <div className="card card--elevated" style={{ maxWidth: '560px' }}>
@@ -92,8 +93,8 @@ function NgoProfilePage() {
             />
           </div>
 
-          {successMessage && <div className="alert alert--success" role="status">{successMessage}</div>}
-          {error && <div className="alert alert--error" role="alert">{error}</div>}
+          {successMessage && <AlertBlock variant="success">{successMessage}</AlertBlock>}
+          {error && <AlertBlock variant="error">{error}</AlertBlock>}
         </div>
         <div className="card__footer" style={{ marginTop: 'var(--space-5)' }}>
           <button type="button" className="btn btn--primary" onClick={onSave}>
