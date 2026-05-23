@@ -69,3 +69,15 @@ export function canCreateDeliverable(project, deliverables = []) {
   if (hasActiveDeliverable(deliverables)) return false
   return true
 }
+
+export const DELIVERABLE_STATUS_LABELS = {
+  pending: 'Pendiente',
+  in_progress: 'En progreso',
+  in_review: 'En revisión',
+  approved: 'Aprobado',
+  rejected: 'Rechazado',
+}
+
+export function getDeliverableStatusLabel(status) {
+  return DELIVERABLE_STATUS_LABELS[status] ?? status
+}

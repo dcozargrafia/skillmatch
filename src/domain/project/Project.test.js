@@ -7,6 +7,8 @@ import {
   getStatusLabel,
   canCompleteProject,
   canCreateDeliverable,
+  DELIVERABLE_STATUS_LABELS,
+  getDeliverableStatusLabel,
 } from './Project'
 
 describe('project domain helpers', () => {
@@ -161,6 +163,32 @@ describe('project domain helpers', () => {
       const project = { id: 1, assignment_id: 5, status: 'in_progress' }
       const deliverables = [{ id: 1, status: 'in_progress' }]
       expect(canCreateDeliverable(project, deliverables)).toBe(false)
+    })
+  })
+
+  describe('DELIVERABLE_STATUS_LABELS', () => {
+    it('exposes mapping for all five deliverable statuses', () => {
+      expect(DELIVERABLE_STATUS_LABELS).toEqual({
+        pending: 'Pendiente',
+        in_progress: 'En progreso',
+        in_review: 'En revisión',
+        approved: 'Aprobado',
+        rejected: 'Rechazado',
+      })
+    })
+  })
+
+  describe('getDeliverableStatusLabel', () => {
+    it('returns Spanish label for known deliverable statuses', () => {
+      expect(getDeliverableStatusLabel('pending')).toBe('Pendiente')
+      expect(getDeliverableStatusLabel('in_progress')).toBe('En progreso')
+      expect(getDeliverableStatusLabel('in_review')).toBe('En revisión')
+      expect(getDeliverableStatusLabel('approved')).toBe('Aprobado')
+      expect(getDeliverableStatusLabel('rejected')).toBe('Rechazado')
+    })
+
+    it('returns the raw status value for unknown statuses', () => {
+      expect(getDeliverableStatusLabel('unknown_status')).toBe('unknown_status')
     })
   })
 })
