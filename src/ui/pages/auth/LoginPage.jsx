@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Navigate, Link } from 'react-router-dom';
 import useAuthStore from '../../hooks/useAuthStore';
 import { ROLE_HOME } from '../../router/AppRouter';
-import { isNetworkError } from '../../../infrastructure/api/client.js';
+import { isNetworkError } from '../../../domain/user/User.js';
 
 function LoginPage() {
   const user = useAuthStore((s) => s.user);

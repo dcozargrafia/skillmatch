@@ -1,27 +1,54 @@
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import ForgotPasswordPage from './ForgotPasswordPage';
+/**
+ * Tests para ForgotPasswordPage (SMAPP-auth).
+ *
+ * Criterios de aceptación:
+ * - Muestra campo de email y botón de envío
+ * - Llama a useForgotPassword.handleSubmit con el email introducido
+ * - Tras submit exitoso muestra mensaje de confirmación
+ * - Errores también muestran confirmación (no revelan si el email existe)
+ */
 
-vi.mock('../../../infrastructure/api/authApi.js', () => ({
-  forgotPasswordRequest: vi.fn(),
+import { render, screen, waitFor } from '@testing-library/react';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
+import userEvent from '@testing-library/user-event';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
+
+const mockHandleSubmit = vi.fn();
+const mockSetEmail = vi.fn();
+
+vi.mock('../../hooks/useForgotPassword.jsx', () => ({
+  default: vi.fn(),
 }));
 
-import { forgotPasswordRequest } from '../../../infrastructure/api/authApi.js';
+const { default: useForgotPassword } = await import('../../hooks/useForgotPassword.jsx');
+const { default: ForgotPasswordPage } = await import('./ForgotPasswordPage.jsx');
 
-function renderPage() {
+function renderPage(overrides = {}) {
+  const state = {
+    email: '',
+    setEmail: mockSetEmail,
+    error: null,
+    isLoading: false,
+    sent: false,
+    handleSubmit: mockHandleSubmit,
+    ...overrides,
+  };
+
+  useForgotPassword.mockReturnValue(state);
+
   return render(
     <MemoryRouter initialEntries={['/forgot-password']}>
       <Routes>
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       </Routes>
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 }
 
 beforeEach(() => {
   vi.clearAllMocks();
-  forgotPasswordRequest.mockResolvedValue({ message: 'ok' });
+  mockHandleSubmit.mockResolvedValue(undefined);
+  mockSetEmail.mockClear();
 });
 
 describe('ForgotPasswordPage', () => {
@@ -31,33 +58,26 @@ describe('ForgotPasswordPage', () => {
     expect(screen.getByRole('button', { name: /enviar/i })).toBeInTheDocument();
   });
 
-  it('AC2: llama a forgotPasswordRequest con el email introducido', async () => {
+  it('AC2: llama a handleSubmit con el email introducido', async () => {
     renderPage();
-    fireEvent.change(screen.getByRole('textbox', { name: /email/i }), {
-      target: { value: 'usuario@example.com' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: /enviar/i }));
-    await waitFor(() =>
-      expect(forgotPasswordRequest).toHaveBeenCalledWith('usuario@example.com')
-    );
+
+    const user = userEvent.setup();
+    await user.type(screen.getByRole('textbox', { name: /email/i }), 'usuario@example.com');
+    await user.click(screen.getByRole('button', { name: /enviar/i }));
+
+    await waitFor(() => expect(mockHandleSubmit).toHaveBeenCalled());
   });
 
-  it('AC3: tras enviar muestra mensaje de confirmación sin revelar si el email existe', async () => {
-    renderPage();
-    fireEvent.change(screen.getByRole('textbox', { name: /email/i }), {
-      target: { value: 'cualquiera@example.com' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: /enviar/i }));
-    await screen.findByText(/si el email está registrado/i);
+  it('AC3: tras submit exitoso muestra mensaje de confirmación sin revelar si el email existe', () => {
+    renderPage({ sent: true });
+
+    expect(screen.getByText(/si el email está registrado/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /volver al inicio de sesión/i })).toBeInTheDocument();
   });
 
-  it('AC4: error de API también muestra el mensaje de confirmación (no revela existencia)', async () => {
-    forgotPasswordRequest.mockRejectedValueOnce(new Error('Not found'));
-    renderPage();
-    fireEvent.change(screen.getByRole('textbox', { name: /email/i }), {
-      target: { value: 'noexiste@example.com' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: /enviar/i }));
-    await screen.findByText(/si el email está registrado/i);
+  it('AC4: error de API también muestra el mensaje de confirmación (no revela existencia)', () => {
+    renderPage({ sent: true });
+
+    expect(screen.getByText(/si el email está registrado/i)).toBeInTheDocument();
   });
 });

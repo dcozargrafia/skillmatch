@@ -16,6 +16,12 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import useAuthStore from '../../hooks/useAuthStore';
 
+vi.mock('../../../domain/user/User.js', () => ({
+  isNetworkError: vi.fn(),
+}));
+
+import { isNetworkError } from '../../../domain/user/User.js';
+
 vi.mock('../../hooks/useAuthStore');
 
 const mockLogin = vi.fn();
@@ -52,6 +58,7 @@ async function renderLogin({ user = null, isLoading = false } = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  isNetworkError.mockReturnValue(false);
 });
 
 describe('estructura del formulario', () => {
@@ -158,6 +165,7 @@ describe('errores de API', () => {
   });
 
   it('muestra banner de sin conexión y cambia el botón a Reintentar cuando el backend no responde (error de red)', async () => {
+    isNetworkError.mockReturnValue(true);
     mockLogin.mockRejectedValue(new Error('Network Error'));
     await renderLogin();
     const user = userEvent.setup();
@@ -172,6 +180,7 @@ describe('errores de API', () => {
   });
 
   it('oculta el banner de sin conexión al recuperar la conexión (submit exitoso tras error de red)', async () => {
+    isNetworkError.mockReturnValue(true);
     mockLogin
       .mockRejectedValueOnce(new Error('Network Error'))
       .mockImplementationOnce(() => mockStore({ user: { role: 'student' } }));
