@@ -5,8 +5,8 @@
 
 import { create } from 'zustand';
 import { loginUseCase } from '../../application/auth/loginUseCase.js';
-import { getMe } from '../../infrastructure/api/usersApi.js';
-import { logoutRequest } from '../../infrastructure/api/authApi.js';
+import { hydrateUseCase } from '../../application/auth/hydrateUseCase.js';
+import { logoutUseCase } from '../../application/auth/logoutUseCase.js';
 
 const useAuthStore = create((set) => ({
   /** @type {{ id: number, name: string, email: string, role: string }|null} */
@@ -41,7 +41,7 @@ const useAuthStore = create((set) => ({
    */
   logout: async () => {
     try {
-      await logoutRequest();
+      await logoutUseCase();
     } catch {
       // silencioso: el estado local se limpia igualmente
     }
@@ -57,7 +57,7 @@ const useAuthStore = create((set) => ({
   hydrate: async () => {
     set({ isLoading: true });
     try {
-      const user = await getMe();
+      const user = await hydrateUseCase();
       set({ user, isLoading: false });
     } catch {
       set({ user: null, isLoading: false });
