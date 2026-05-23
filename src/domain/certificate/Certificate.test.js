@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   canDownloadCertificate,
-  buildCertificateDownload,
 } from './Certificate.js';
 
 describe('Certificate', () => {
@@ -32,12 +31,6 @@ describe('Certificate', () => {
 
     it('returns false when no status and no certificate_id', () => {
       expect(canDownloadCertificate({})).toBe(false);
-    });
-  });
-
-  describe('buildCertificateDownload', () => {
-    it('is a function that exists', () => {
-      expect(typeof buildCertificateDownload).toBe('function');
     });
   });
 });

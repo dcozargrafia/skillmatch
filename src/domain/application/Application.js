@@ -1,3 +1,13 @@
+/**
+ * Módulo de dominio: aplicaciones a proyectos.
+ *
+ * Clasificación de estados de aplicación (applied, pending,
+ * accepted, rejected, assigned) y guards para determinar
+ * si un estudiante ya aplicó o fue aceptado. Los hooks
+ * consultan estos guards en vez de comparar strings inline.
+ *
+ * Sin dependencias de React, Axios ni infraestructura.
+ */
 const STATUS_LABELS = {
   applied: 'Ya aplicadas',
   pending: 'Pendiente',

@@ -1,3 +1,12 @@
+/**
+ * Módulo de dominio: estudiante.
+ *
+ * Normalización de perfil (disponibilidad↔availability) y
+ * validación de portfolio URL. Los hooks de estudiante delegan
+ * aquí la sanitización y validación antes de enviar a la API.
+ *
+ * Sin dependencias de React, Axios ni infraestructura.
+ */
 function isValidUrl(url) {
   if (!url) return true; // empty is valid
   const trimmed = url.trim();
