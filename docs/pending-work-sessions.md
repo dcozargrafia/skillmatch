@@ -1,167 +1,91 @@
-# Pending work sessions
+# Pendientes de SkillMatch
 
-Este documento agrupa los pendientes actuales en sesiones semi-independientes para avanzar mañana con foco y sin mezclar demasiadas decisiones en un mismo bloque.
+Última actualización: 2026-05-23
+
+## Lo que ya está hecho ✅
+
+| Sesión original | Qué se hizo | PRs |
+|---|---|---|
+| Arquitectura y limpieza NGO | Refactor hexagonal completo (domain → app → hooks → pages) | #46, #49, #50 |
+| Modelo de vistas y navegación | Rediseño del flujo de Student con navegación por estados | #42 |
+| Student UX | Refactor hexagonal completo + DeliverableCard compartido | #51, #52, #53 |
+| Admin/Auth hexagonal | Refactor hexagonal completo (no estaba en la lista original) | #54, #57, #58 |
+| Auditoría de domain | Comentarios JSDoc + eliminar brecha hexagonal + dead code | #59 |
+
+---
+
+## Pendientes actuales
+
+### 🔴 Bug — Skills en Student no se agregan bien
+
+**Problema**: Al agregar skills en el perfil de Student, algo falla. Investigar y corregir.
+
+**Prioridad**: Alta — es un bug visible por el usuario.
+
+---
+
+### 🟡 Entregables — UX y datos
+
+Mejoras específicas en cómo se muestran y ordenan los entregables, tanto en vista Student como ONG.
+
+- **Labels de entregables en español**: los estados aparecen en inglés (pending, in_progress, etc.). Requieren traducción usando `STATUS_LABELS` del domain o equivalente.
+- **Orden de entregables en las listas**: verificar que entregables aparezcan en orden lógico (cronológico o por estado) en Student y ONG.
+- **Datos en fichas de entregables**: revisar qué datos se muestran (fecha creación, estado) y si falta información útil.
+- **Texto contextual del estado del proyecto**: cuando un proyecto está `in_review`, explicar qué está pasando. Ejemplos:
+  - `in_review` sin entregables aprobados → "Esperando que la ONG apruebe o rechace el último entregable."
+  - `in_review` con todos los entregables aprobados → "Esperando que la ONG marque el proyecto como completado o cree otro entregable."
+  - Revisar `Project.js` (máquina de estados) para mapear cada estado a un mensaje claro.
+- **Botón "Ver detalles" en project/deliverable**: en la vista Student, verificar que el botón lleve al lugar correcto y sea claro.
+
+**Prioridad**: Media-alta — mejora UX directamente en el flujo más importante del producto.
+
+---
+
+### 🟡 NGO — UX de gestión y skills requeridas
+
+- **Añadir skills requeridas al crear proyecto**: la ONG debería poder seleccionar qué skills necesita para el proyecto al crearlo.
+- **Mejorar UX de gestión activa de proyectos ONG**: vacíos, acciones, feedback visual.
+- **Clasificación publicados / activos / terminados**: revisar que la navegación por estados sea consistente.
+
+**Prioridad**: Media — importante, pero conviene hacer sobre la base hexagonal ya estable.
+
+---
+
+### 🟡 Reseñas (ONG + Student)
+
+- Implementar reseñas de Student y ONG.
+- Validar cuándo se habilitan (proyecto completado / certificado).
+- Reglas de negocio: una reseña por usuario por proyecto.
+- Dependencias con `Review.js` (domain) y `canSubmitReview`.
+
+**Prioridad**: Media — feature nueva pero aisleable.
+
+---
+
+### 🟢 Pulido transversal
+
+- Mejorar pantallas vacías de ONG y Student.
+- Mejorar navegación contextual (volver, breadcrumbs).
+- Revisión general de consistencia visual y mensajes.
+
+**Prioridad**: Baja — conviene al final para no retrabajar.
+
+---
 
 ## Orden recomendado
 
-1. **Arquitectura y limpieza del área NGO**
-2. **Modelo de vistas y navegación principal**
-3. **Flujo Student: UX y estados**
-4. **Flujo NGO: UX, clasificación y creación de proyectos**
-5. **Reseñas y cierre completo del ciclo**
-6. **Pulido transversal de UI vacía, navegación y consistencia**
+1. **Bug de Skills** — fix rápido, no necesita SDD
+2. **Entregables UX** — SDD con foco en domain + hooks + pages (texts de estado ya tienen base en `Project.js`)
+3. **NGO skills + gestión** — SDD para la feature de skills al crear proyecto
+4. **Reseñas** — SDD para flujo completo
+5. **Pulido transversal** — al final, sin SDD probablemente
 
 ---
 
-## Session 1 — Arquitectura y limpieza NGO
+## Notas para la defensa del PFG
 
-**Objetivo**: bajar deuda técnica antes de seguir agregando features.
-
-### Incluye
-- Revisar `NgoProjectDetailPage.jsx` para dividirlo en componentes más chicos.
-- Decidir si conviene extraer componentes de deliverables, assignment summary y header actions.
-- Revisar `NgoDeliverablesPage.jsx` y decidir:
-  - eliminarlo,
-  - reciclarlo,
-  - o convertirlo en componente reutilizable.
-- Detectar archivos huérfanos, desactualizados o duplicados.
-- Revisar documentación y estructura para evitar archivos kilométricos.
-
-### Por qué va primero
-- Reduce riesgo antes de seguir tocando NGO y Student.
-- Evita que nuevas mejoras caigan sobre archivos ya demasiado grandes.
-
-### Entregable esperado
-- propuesta clara de refactor + primer recorte estructural
-- lista de archivos para borrar/mover/dividir
-
----
-
-## Session 2 — Modelo de vistas y navegación principal
-
-**Objetivo**: redefinir cómo se organizan las pantallas principales de Student y NGO.
-
-### Incluye
-- Rediseñar clasificación de vistas en Student.
-- Rediseñar clasificación de vistas en NGO.
-- Proponer naming y estructura de navegación consistentes.
-- Revisar botones de retorno, breadcrumbs o navegación contextual.
-
-### Propuesta inicial
-
-#### Student
-- Perfil
-- Proyectos disponibles
-- Proyectos en curso
-- Proyectos finalizados
-
-#### NGO
-- Perfil
-- Proyectos publicados
-- Proyectos activos
-- Proyectos terminados
-
-### Por qué va acá
-- Estas decisiones impactan varias pantallas.
-- Conviene definir la estructura antes de pulir UX detallada.
-
-### Entregable esperado
-- mapa de navegación
-- criterio de clasificación por estados
-- backlog concreto de cambios de rutas/vistas
-
----
-
-## Session 3 — Student: UX de proyectos y entregables
-
-**Objetivo**: hacer coherente y clara la experiencia del student dentro del trabajo activo.
-
-### Incluye
-- Mejorar UI/UX en proyectos/entregables de Student.
-- Revisar actualización de estados visibles.
-- Revisar confirmación de acciones.
-- Detectar botones que sobran/faltan.
-- Revisar mensajes de error y estados vacíos dentro del flujo Student.
-
-### Dependencias
-- Idealmente después de Session 2 para que la navegación ya esté definida.
-
-### Entregable esperado
-- flujo Student consistente end-to-end
-- criterios de UX para acciones críticas
-
----
-
-## Session 4 — NGO: UX de gestión activa y skills requeridas
-
-**Objetivo**: completar el flujo operativo de ONG una vez saneada la base.
-
-### Incluye
-- Añadir skills requeridas al crear proyecto.
-- Mejorar UX de gestión activa de proyectos ONG.
-- Refinar vacíos, acciones y feedback visual en pantallas NGO.
-- Revisar clasificación entre publicados / activos / terminados.
-
-### Por qué no va antes
-- Mezcla feature nueva con mejoras de UX y clasificación.
-- Conviene apoyarse en las decisiones de Session 1 y 2.
-
-### Entregable esperado
-- creación de proyecto más completa
-- vistas ONG más coherentes con el ciclo de vida real
-
----
-
-## Session 5 — Reseñas (ONG + Student)
-
-**Objetivo**: cerrar la parte social/valorativa del producto.
-
-### Incluye
-- Implementar reseñas de Student.
-- Implementar reseñas de ONG.
-- Validar cuándo se habilitan.
-- Revisar dependencias con proyectos completados/certificados.
-
-### Por qué en una sesión separada
-- Es un flujo funcional propio.
-- Toca reglas, formularios, validaciones y quizás listados/perfiles.
-
-### Entregable esperado
-- flujo de reseñas completo y verificable
-
----
-
-## Session 6 — Pulido transversal
-
-**Objetivo**: atacar mejoras compartidas sin mezclar lógica core.
-
-### Incluye
-- Mejorar pantallas vacías de ONG y Student.
-- Mejorar navegación contextual (`volver`, regreso a pantalla anterior, etc.).
-- Revisión general de consistencia visual y mensajes.
-
-### Cuándo conviene hacerla
-- Después de que la estructura y los flujos principales ya estén estabilizados.
-
-### Entregable esperado
-- experiencia más limpia y menos fricción visual
-
----
-
-## Notas de priorización
-
-| Prioridad | Tema | Motivo |
-|---|---|---|
-| Alta | Arquitectura y limpieza NGO | ahora ya hay archivos grandes y riesgo de deuda técnica |
-| Alta | Modelo de vistas | afecta la organización de casi todo lo demás |
-| Alta | Student UX activa | flujo sensible del producto |
-| Media | NGO UX + skills requeridas | importante, pero mejor sobre base más limpia |
-| Media | Reseñas | feature completa, relativamente aislable |
-| Media | Pulido transversal | conviene al final para no retrabajar |
-
-## Quick path para mañana
-
-1. Empezar por **Session 1**.
-2. Tomar una decisión explícita sobre `NgoDeliverablesPage.jsx`.
-3. Definir la clasificación final de vistas de Student y NGO.
-4. Recién después entrar a mejoras de UX específicas.
+- Arquitectura hexagonal implementada en las 3 áreas (NGO, Student, Admin/Auth) con 3 PRs encadenados cada una.
+- 633 tests, 0 imports de `infrastructure/` en la capa UI, regla de dependencia verificable.
+- Los 8 archivos de domain tienen JSDoc documentando propósito y restricción de pureza.
+- `Review.js` tiene una dependencia implícita en la forma del error de Axios (`error.response.status`).
+- `Project.js` es el archivo más crítico del domain — contiene la máquina de estados completa del ciclo de vida.
