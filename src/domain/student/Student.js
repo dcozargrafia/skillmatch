@@ -23,6 +23,20 @@ export function normalizeStudentProfile({ disponibilidad, portfolio_url, skills 
   };
 }
 
+/**
+ * Normaliza el perfil recibido de la API (campos en inglés)
+ * al formato que usa la UI (campos en español).
+ * Los niveles de skill se conservan en inglés — se muestran en español
+ * vía LEVEL_OPTIONS en la página.
+ */
+export function normalizeInboundStudentProfile(profile) {
+  if (!profile) return null;
+  return {
+    ...profile,
+    disponibilidad: profile.availability ?? false,
+  };
+}
+
 export function validateStudentProfile({ disponibilidad, portfolioUrl, skills }) {
   const values = {
     disponibilidad: disponibilidad ?? false,

@@ -1,6 +1,8 @@
 /**
  * Test: useStudentProfile
- * SDD Phase 3, Task 3.1
+ *
+ * Uses English level values (basic, intermediate, advanced) matching the API.
+ * The UI displays Spanish labels but sends/receives English values internally.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -32,8 +34,8 @@ const mockProfile = {
   disponibilidad: true,
   portfolio_url: 'https://portfolio.example.com',
   skills: [
-    { skill_id: 'skill-a', level: 'básico' },
-    { skill_id: 'skill-b', level: 'intermedio' },
+    { skill_id: 'skill-a', level: 'basic' },
+    { skill_id: 'skill-b', level: 'intermediate' },
   ],
 };
 
@@ -115,7 +117,7 @@ describe('useStudentProfile', () => {
   });
 
   it('handleAddSkill calls updateStudentSkillsUseCase and re-syncs', async () => {
-    const updatedProfile = { ...mockProfile, skills: [...mockProfile.skills, { skill_id: 'skill-c', level: 'avanzado' }] };
+    const updatedProfile = { ...mockProfile, skills: [...mockProfile.skills, { skill_id: 'skill-c', level: 'advanced' }] };
     getStudentProfileUseCase
       .mockResolvedValueOnce({ profile: mockProfile, allSkills: mockSkills })
       .mockResolvedValueOnce({ profile: updatedProfile, allSkills: mockSkills });
@@ -128,19 +130,19 @@ describe('useStudentProfile', () => {
     });
 
     await act(async () => {
-      await result.current.handleAddSkill('skill-c', 'avanzado');
+      await result.current.handleAddSkill('skill-c', 'advanced');
     });
 
     expect(updateStudentSkillsUseCase).toHaveBeenCalledWith([
-      { skill_id: 'skill-a', level: 'básico' },
-      { skill_id: 'skill-b', level: 'intermedio' },
-      { skill_id: 'skill-c', level: 'avanzado' },
+      { skill_id: 'skill-a', level: 'basic' },
+      { skill_id: 'skill-b', level: 'intermediate' },
+      { skill_id: 'skill-c', level: 'advanced' },
     ]);
     expect(result.current.successMessage).toBe('Skill agregada correctamente.');
   });
 
   it('handleRemoveSkill calls updateStudentSkillsUseCase and re-syncs', async () => {
-    const updatedProfile = { ...mockProfile, skills: [{ skill_id: 'skill-a', level: 'básico' }] };
+    const updatedProfile = { ...mockProfile, skills: [{ skill_id: 'skill-a', level: 'basic' }] };
     getStudentProfileUseCase
       .mockResolvedValueOnce({ profile: mockProfile, allSkills: mockSkills })
       .mockResolvedValueOnce({ profile: updatedProfile, allSkills: mockSkills });
@@ -157,9 +159,39 @@ describe('useStudentProfile', () => {
     });
 
     expect(updateStudentSkillsUseCase).toHaveBeenCalledWith([
-      { skill_id: 'skill-a', level: 'básico' },
+      { skill_id: 'skill-a', level: 'basic' },
     ]);
     expect(result.current.successMessage).toBe('Skill eliminada correctamente.');
+  });
+
+  it('handleChangeLevel calls updateStudentSkillsUseCase with updated level and re-syncs', async () => {
+    const updatedProfile = {
+      ...mockProfile,
+      skills: [
+        { skill_id: 'skill-a', level: 'basic' },
+        { skill_id: 'skill-b', level: 'advanced' },
+      ],
+    };
+    getStudentProfileUseCase
+      .mockResolvedValueOnce({ profile: mockProfile, allSkills: mockSkills })
+      .mockResolvedValueOnce({ profile: updatedProfile, allSkills: mockSkills });
+    updateStudentSkillsUseCase.mockResolvedValue();
+
+    const { result } = renderHook(() => useStudentProfile());
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    await act(async () => {
+      await result.current.handleChangeLevel('skill-b', 'advanced');
+    });
+
+    expect(updateStudentSkillsUseCase).toHaveBeenCalledWith([
+      { skill_id: 'skill-a', level: 'basic' },
+      { skill_id: 'skill-b', level: 'advanced' },
+    ]);
+    expect(result.current.successMessage).toBe('Nivel actualizado correctamente.');
   });
 
   it('handleSave catches error and sets error message', async () => {

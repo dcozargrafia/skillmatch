@@ -1,10 +1,12 @@
 /**
  * Hook: useStudentProfile
- * SDD Phase 3, Task 3.1
  *
  * Carga perfil + skills del estudiante autenticado.
  * Llama a getStudentProfileUseCase, updateStudentProfileUseCase, updateStudentSkillsUseCase.
  * NUNCA llama a infrastructure APIs directamente.
+ *
+ * Los niveles de skill se manejan en inglés internamente (matching API)
+ * y se muestran en español en la UI vía LEVEL_OPTIONS.
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -23,6 +25,7 @@ import { updateStudentSkillsUseCase } from '../../application/student/updateStud
  *   handleSave: (data: object) => Promise<void>,
  *   handleAddSkill: (skillId: string, level: string) => Promise<void>,
  *   handleRemoveSkill: (skillId: string) => Promise<void>,
+ *   handleChangeLevel: (skillId: string, newLevel: string) => Promise<void>,
  * }}
  */
 export default function useStudentProfile() {
@@ -128,6 +131,33 @@ export default function useStudentProfile() {
     [profile]
   );
 
+  /**
+   * handleChangeLevel: cambia el nivel de un skill existente.
+   * Envía un solo update con todos los skills (sin remove+add).
+   */
+  const handleChangeLevel = useCallback(
+    async (skillId, newLevel) => {
+      setError(null);
+      setSuccessMessage('');
+      try {
+        const currentSkills = profile?.skills ?? [];
+        const updated = currentSkills.map((s) =>
+          s.skill_id === skillId
+            ? { skill_id: s.skill_id, level: newLevel }
+            : { skill_id: s.skill_id, level: s.level }
+        );
+        await updateStudentSkillsUseCase(updated);
+        const { profile: updatedProfile, allSkills: s } = await getStudentProfileUseCase();
+        setProfile(updatedProfile);
+        setAllSkills(s);
+        setSuccessMessage('Nivel actualizado correctamente.');
+      } catch {
+        setError('Error al actualizar el nivel. Intenta de nuevo.');
+      }
+    },
+    [profile]
+  );
+
   return {
     profile,
     allSkills,
@@ -138,5 +168,6 @@ export default function useStudentProfile() {
     handleSave,
     handleAddSkill,
     handleRemoveSkill,
+    handleChangeLevel,
   };
 }

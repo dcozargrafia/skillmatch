@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   normalizeStudentProfile,
+  normalizeInboundStudentProfile,
   validateStudentProfile,
   canEditProfile,
 } from './Student.js';
@@ -31,6 +32,37 @@ describe('Student', () => {
     it('handles undefined disponibilidad as false', () => {
       const result = normalizeStudentProfile({ disponibilidad: undefined, portfolio_url: '', skills: [] });
       expect(result.availability).toBe(false);
+    });
+  });
+
+  describe('normalizeInboundStudentProfile', () => {
+    it('maps availability to disponibilidad', () => {
+      const result = normalizeInboundStudentProfile({ id: 's1', name: 'Ana', availability: true, portfolio_url: '', skills: [] });
+      expect(result.disponibilidad).toBe(true);
+      expect(result.availability).toBe(true);
+    });
+
+    it('defaults disponibilidad to false when availability is missing', () => {
+      const result = normalizeInboundStudentProfile({ id: 's1', name: 'Ana', portfolio_url: '' });
+      expect(result.disponibilidad).toBe(false);
+    });
+
+    it('preserves all other fields', () => {
+      const profile = { id: 's1', name: 'Ana', email: 'ana@dev.io', availability: false, portfolio_url: 'https://dev.io', skills: [{ skill_id: 'sk1', level: 'basic' }] };
+      const result = normalizeInboundStudentProfile(profile);
+      expect(result.id).toBe('s1');
+      expect(result.name).toBe('Ana');
+      expect(result.email).toBe('ana@dev.io');
+      expect(result.skills).toEqual([{ skill_id: 'sk1', level: 'basic' }]);
+    });
+
+    it('returns null for null input', () => {
+      expect(normalizeInboundStudentProfile(null)).toBeNull();
+    });
+
+    it('keeps skill levels in English', () => {
+      const result = normalizeInboundStudentProfile({ id: 's1', availability: true, skills: [{ skill_id: 'sk1', level: 'intermediate' }] });
+      expect(result.skills[0].level).toBe('intermediate');
     });
   });
 

@@ -1,20 +1,29 @@
 import { useState } from 'react';
 import useStudentProfile from '../../hooks/useStudentProfile.jsx';
 
-const LEVELS = ['básico', 'intermedio', 'avanzado'];
+/** Opciones de nivel: valor en inglés (matching API) → label en español (display). */
+const LEVEL_OPTIONS = [
+  { value: 'basic', label: 'básico' },
+  { value: 'intermediate', label: 'intermedio' },
+  { value: 'advanced', label: 'avanzado' },
+];
+
+const DEFAULT_LEVEL = LEVEL_OPTIONS[0].value;
 
 function StudentProfilePage() {
   const {
     profile,
     allSkills,
     availableSkills,
-    loading,
     error,
     successMessage,
     handleSave,
     handleAddSkill,
     handleRemoveSkill,
+    handleChangeLevel,
   } = useStudentProfile();
+
+  const [newSkillLevel, setNewSkillLevel] = useState(DEFAULT_LEVEL);
 
   if (error && !profile) return <div className="alert alert--error">{error}</div>;
   if (!profile) return <p className="loading">Cargando...</p>;
@@ -58,13 +67,10 @@ function StudentProfilePage() {
                   className="form-select"
                   style={{ maxWidth: '160px' }}
                   value={ps.level}
-                  onChange={(e) => {
-                    const newLevel = e.target.value;
-                    handleRemoveSkill(ps.skill_id).then(() => handleAddSkill(ps.skill_id, newLevel));
-                  }}
+                  onChange={(e) => handleChangeLevel(ps.skill_id, e.target.value)}
                 >
-                  {LEVELS.map((l) => (
-                    <option key={l} value={l}>{l}</option>
+                  {LEVEL_OPTIONS.map(({ value, label }) => (
+                    <option key={value} value={value}>{label}</option>
                   ))}
                 </select>
                 <button type="button" className="btn btn--danger btn--sm" onClick={() => handleRemoveSkill(ps.skill_id)}>
@@ -83,7 +89,10 @@ function StudentProfilePage() {
               className="form-select"
               value=""
               onChange={(e) => {
-                if (e.target.value) handleAddSkill(e.target.value, LEVELS[0]);
+                if (e.target.value) {
+                  handleAddSkill(e.target.value, newSkillLevel);
+                  setNewSkillLevel(DEFAULT_LEVEL);
+                }
               }}
             >
               <option value="">-- selecciona --</option>
@@ -96,20 +105,16 @@ function StudentProfilePage() {
           <div className="toolbar__group">
             <label className="form-label">Nivel</label>
             <select
-              aria-label="Nivel"
+              aria-label="Nivel del nuevo skill"
               className="form-select"
-              value={LEVELS[0]}
-              onChange={() => {}}
+              value={newSkillLevel}
+              onChange={(e) => setNewSkillLevel(e.target.value)}
             >
-              {LEVELS.map((l) => (
-                <option key={l} value={l}>{l}</option>
+              {LEVEL_OPTIONS.map(({ value, label }) => (
+                <option key={value} value={value}>{label}</option>
               ))}
             </select>
           </div>
-
-          <button type="button" className="btn btn--secondary" onClick={() => {}}>
-            Agregar
-          </button>
         </div>
       </div>
     </div>
