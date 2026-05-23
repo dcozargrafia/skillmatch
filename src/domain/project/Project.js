@@ -81,3 +81,19 @@ export const DELIVERABLE_STATUS_LABELS = {
 export function getDeliverableStatusLabel(status) {
   return DELIVERABLE_STATUS_LABELS[status] ?? status
 }
+
+export function getProjectStatusMessage(status, deliverables = []) {
+  if (status !== 'in_review') return null
+  const sorted = [...deliverables].sort((a, b) => {
+    const PRIORITY = { pending: 0, in_progress: 1, in_review: 2, approved: 3, rejected: 4 }
+    const pa = PRIORITY[a.status] ?? 5
+    const pb = PRIORITY[b.status] ?? 5
+    if (pa !== pb) return pa - pb
+    return new Date(b.created_at) - new Date(a.created_at)
+  })
+  const top = sorted[0]
+  if (!top || top.status !== 'approved') {
+    return 'Esperando que la ONG apruebe o rechace el último entregable.'
+  }
+  return 'Esperando que la ONG marque el proyecto como completado o cree otro entregable.'
+}

@@ -9,6 +9,7 @@ import {
   canCreateDeliverable,
   DELIVERABLE_STATUS_LABELS,
   getDeliverableStatusLabel,
+  getProjectStatusMessage,
 } from './Project'
 
 describe('project domain helpers', () => {
@@ -189,6 +190,35 @@ describe('project domain helpers', () => {
 
     it('returns the raw status value for unknown statuses', () => {
       expect(getDeliverableStatusLabel('unknown_status')).toBe('unknown_status')
+    })
+  })
+
+  describe('getProjectStatusMessage', () => {
+    it('returns NGO-waiting copy when status is in_review and a deliverable is not approved', () => {
+      const message = getProjectStatusMessage('in_review', [
+        { id: 1, status: 'approved' },
+        { id: 2, status: 'in_review' },
+      ])
+      expect(message).toBe('Esperando que la ONG apruebe o rechace el último entregable.')
+    })
+
+    it('returns completion-or-new copy when status is in_review and all deliverables are approved', () => {
+      const message = getProjectStatusMessage('in_review', [
+        { id: 1, status: 'approved' },
+        { id: 2, status: 'approved' },
+      ])
+      expect(message).toBe(
+        'Esperando que la ONG marque el proyecto como completado o cree otro entregable.',
+      )
+    })
+
+    it('returns null for non-in_review statuses', () => {
+      expect(getProjectStatusMessage('pending', [])).toBeNull()
+      expect(getProjectStatusMessage('assigned', [])).toBeNull()
+      expect(getProjectStatusMessage('in_progress', [])).toBeNull()
+      expect(getProjectStatusMessage('completed', [])).toBeNull()
+      expect(getProjectStatusMessage('rejected', [])).toBeNull()
+      expect(getProjectStatusMessage('cancelled', [])).toBeNull()
     })
   })
 })
