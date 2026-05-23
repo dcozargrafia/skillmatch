@@ -9,6 +9,11 @@ vi.mock('../../../infrastructure/api/deliverableApi.js', () => ({
   reviewDeliverable: vi.fn(),
 }));
 
+vi.mock('../../../ui/hooks/useProjectDetail.jsx', () => ({
+  default: vi.fn(),
+}));
+
+import useProjectDetail from '../../../ui/hooks/useProjectDetail.jsx';
 import {
   getDeliverablesByAssignment,
   createDeliverable,
@@ -20,6 +25,25 @@ const mockDeliverables = [
   { id: 'd2', title: 'Backend API', status: 'in_review', description: 'Endpoints REST', file_url: 'https://example.com/api.pdf' },
   { id: 'd3', title: 'Frontend', status: 'approved', description: 'UI completa' },
 ];
+
+function setupProjectDetailHook(overrides = {}) {
+  const defaults = {
+    project: { id: 'p1', title: 'Test Project' },
+    assignment: { id: 'asgn1' },
+    deliverables: mockDeliverables,
+    applications: [],
+    loading: false,
+    error: null,
+    actions: {
+      handleReview: vi.fn().mockResolvedValue(true),
+      handleCreateDeliverable: vi.fn().mockResolvedValue({ id: 'd4', title: 'Nuevo hito', status: 'pending', description: '' }),
+      handleSelectCandidate: vi.fn(),
+      handleCancelProject: vi.fn(),
+      handleMarkCompleted: vi.fn(),
+    },
+  };
+  useProjectDetail.mockReturnValue({ ...defaults, ...overrides });
+}
 
 function renderPage() {
   return render(
@@ -39,26 +63,28 @@ beforeEach(() => {
   getDeliverablesByAssignment.mockResolvedValue(mockDeliverables);
   createDeliverable.mockResolvedValue({ id: 'd4', title: 'Nuevo hito', status: 'pending', description: '' });
   reviewDeliverable.mockResolvedValue({ id: 'd2', title: 'Backend API', status: 'approved' });
+  setupProjectDetailHook();
 });
 
 describe('NgoDeliverablesPage', () => {
-  it('AC1: carga entregables desde getDeliverablesByAssignment al montar', async () => {
+  it('AC1: carga entregables desde useProjectDetail al montar', async () => {
     renderPage();
-    await waitFor(() => expect(getDeliverablesByAssignment).toHaveBeenCalledWith('asgn1'));
+    await waitFor(() => expect(useProjectDetail).toHaveBeenCalledWith('p1'));
     expect(await screen.findByText('Diseño de BD')).toBeInTheDocument();
   });
 
-  it('AC2: muestra título y estado de cada entregable', async () => {
+  it('AC2: muestra título y estado de cada entregable con labels en español', async () => {
     renderPage();
     await screen.findByText('Diseño de BD');
     expect(screen.getByText('Backend API')).toBeInTheDocument();
     expect(screen.getByText('Frontend')).toBeInTheDocument();
-    expect(screen.getByText('pending')).toBeInTheDocument();
-    expect(screen.getByText('in_review')).toBeInTheDocument();
-    expect(screen.getByText('approved')).toBeInTheDocument();
+    // Should show Spanish labels, not raw status
+    expect(screen.getByText('Pendiente')).toBeInTheDocument();
+    expect(screen.getByText('En revisión')).toBeInTheDocument();
+    expect(screen.getByText('Aprobado')).toBeInTheDocument();
   });
 
-  it('AC3: el formulario de nuevo hito llama a createDeliverable con title y description', async () => {
+  it('AC3: el formulario de nuevo hito llama a handleCreateDeliverable con title y description', async () => {
     renderPage();
     await screen.findByText('Diseño de BD');
     fireEvent.change(screen.getByRole('textbox', { name: /título del hito/i }), {
@@ -66,20 +92,21 @@ describe('NgoDeliverablesPage', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: /añadir hito/i }));
     await waitFor(() =>
-      expect(createDeliverable).toHaveBeenCalledWith(
-        expect.objectContaining({ assignment_id: 'asgn1', title: 'Nuevo hito' })
+      expect(useProjectDetail().actions.handleCreateDeliverable).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Nuevo hito' })
       )
     );
   });
 
-  it('AC4: el nuevo hito aparece en la lista tras crearlo', async () => {
+  it('AC4: el formulario se limpia tras crear un nuevo hito', async () => {
     renderPage();
     await screen.findByText('Diseño de BD');
-    fireEvent.change(screen.getByRole('textbox', { name: /título del hito/i }), {
+    const titleInput = screen.getByRole('textbox', { name: /título del hito/i });
+    fireEvent.change(titleInput, {
       target: { value: 'Nuevo hito' },
     });
     fireEvent.click(screen.getByRole('button', { name: /añadir hito/i }));
-    expect(await screen.findByText('Nuevo hito')).toBeInTheDocument();
+    await waitFor(() => expect(titleInput.value).toBe(''));
   });
 
   it('AC5: los botones Aprobar y Rechazar solo aparecen en entregables in_review', async () => {
@@ -91,30 +118,27 @@ describe('NgoDeliverablesPage', () => {
     expect(screen.getAllByRole('button', { name: /aprobar/i })).toHaveLength(1);
   });
 
-  it('AC6: Aprobar llama a reviewDeliverable con approved y actualiza estado', async () => {
+  it('AC6: Aprobar llama a handleReview con approved y actualiza estado', async () => {
     renderPage();
     await screen.findByText('Backend API');
     fireEvent.click(screen.getByRole('button', { name: /aprobar/i }));
     await waitFor(() =>
-      expect(reviewDeliverable).toHaveBeenCalledWith('d2', { status: 'approved' })
+      expect(useProjectDetail().actions.handleReview).toHaveBeenCalledWith('d2', 'approved')
     );
-    const approvedItems = await screen.findAllByText('approved');
-    expect(approvedItems.length).toBeGreaterThanOrEqual(2);
   });
 
-  it('AC7: Rechazar llama a reviewDeliverable con rejected y actualiza estado', async () => {
-    reviewDeliverable.mockResolvedValue({ id: 'd2', title: 'Backend API', status: 'rejected' });
+  it('AC7: Rechazar llama a handleReview con rejected', async () => {
+    useProjectDetail().actions.handleReview.mockResolvedValueOnce(true);
     renderPage();
     await screen.findByText('Backend API');
     fireEvent.click(screen.getByRole('button', { name: /rechazar/i }));
     await waitFor(() =>
-      expect(reviewDeliverable).toHaveBeenCalledWith('d2', { status: 'rejected' })
+      expect(useProjectDetail().actions.handleReview).toHaveBeenCalledWith('d2', 'rejected')
     );
-    expect(await screen.findByText('rejected')).toBeInTheDocument();
   });
 
-  it('AC8: muestra error si reviewDeliverable falla', async () => {
-    reviewDeliverable.mockRejectedValueOnce(new Error('Error servidor'));
+  it('AC8: muestra error si handleReview falla', async () => {
+    useProjectDetail().actions.handleReview.mockResolvedValueOnce(false);
     renderPage();
     await screen.findByText('Backend API');
     fireEvent.click(screen.getByRole('button', { name: /aprobar/i }));

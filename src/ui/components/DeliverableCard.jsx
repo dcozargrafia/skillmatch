@@ -23,8 +23,10 @@ import { getDeliverableStatusLabel } from '../../domain/project/Project.js';
  * @param {function} [props.onReject]
  * @param {boolean} [props.disabled]
  * @param {boolean} [props.readOnly]
+ * @param {function} [props.onViewDetails]
+ * @param {boolean} [props.showViewDetails]
  */
-export function DeliverableCard({ deliverable, variant, onStart, onSubmit, onApprove, onReject, disabled, readOnly }) {
+export function DeliverableCard({ deliverable, variant, onStart, onSubmit, onApprove, onReject, disabled, readOnly, onViewDetails, showViewDetails }) {
   const [fileUrl, setFileUrl] = useState('');
 
   const badgeClass =
@@ -63,6 +65,16 @@ export function DeliverableCard({ deliverable, variant, onStart, onSubmit, onApp
         {deliverable.comment && (
           <div className="card__body">
             <p className="text-muted">{deliverable.comment}</p>
+          </div>
+        )}
+        {showViewDetails && onViewDetails && (
+          <div className="card__footer">
+            <button
+              className="btn btn--secondary btn--sm"
+              onClick={() => onViewDetails(deliverable)}
+            >
+              Ver detalles
+            </button>
           </div>
         )}
       </div>
@@ -185,6 +197,17 @@ export function DeliverableCard({ deliverable, variant, onStart, onSubmit, onApp
             onClick={() => onStart?.(deliverable.id)}
           >
             Reintentar
+          </button>
+        </div>
+      )}
+
+      {showViewDetails && onViewDetails && (
+        <div className="card__footer">
+          <button
+            className="btn btn--secondary btn--sm"
+            onClick={() => onViewDetails(deliverable)}
+          >
+            Ver detalles
           </button>
         </div>
       )}
