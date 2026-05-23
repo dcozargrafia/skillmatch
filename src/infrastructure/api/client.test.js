@@ -14,6 +14,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import axios from 'axios';
 
+vi.mock('../../ui/router/navigator.js', () => ({
+  navigateTo: vi.fn(),
+}));
+
 let errorInterceptor;
 
 const mockInstance = {
@@ -35,14 +39,15 @@ vi.mock('axios', () => ({
   },
 }));
 
+const { navigateTo } = await import('../../ui/router/navigator.js');
 const { get, post, put, isNetworkError } = await import('./client.js');
 
 beforeEach(() => {
+  navigateTo.mockClear();
   mockInstance.get.mockReset();
   mockInstance.post.mockReset();
   mockInstance.put.mockReset();
-  delete window.location;
-  window.location = { pathname: '/', href: '' };
+  window.history.replaceState({}, '', '/');
 });
 
 describe('axios.create', () => {
@@ -96,38 +101,38 @@ describe('put', () => {
 
 describe('interceptor 401', () => {
   it('redirige a /login cuando recibe 401 fuera de rutas de auth', async () => {
-    window.location.pathname = '/student/projects';
+    window.history.replaceState({}, '', '/student/projects');
 
     await expect(errorInterceptor({ response: { status: 401 } })).rejects.toMatchObject({ response: { status: 401 } });
-    expect(window.location.href).toBe('/login');
+    expect(navigateTo).toHaveBeenCalledWith('/login');
   });
 
   it('NO redirige cuando recibe 401 en /login', async () => {
-    window.location.pathname = '/login';
+    window.history.replaceState({}, '', '/login');
     const error = { response: { status: 401 } };
 
     await expect(errorInterceptor(error)).rejects.toEqual(error);
-    expect(window.location.href).not.toBe('/login');
+    expect(navigateTo).not.toHaveBeenCalled();
   });
 
   it('NO redirige cuando recibe 401 en /forgot-password', async () => {
-    window.location.pathname = '/forgot-password';
+    window.history.replaceState({}, '', '/forgot-password');
     const error = { response: { status: 401 } };
 
     await expect(errorInterceptor(error)).rejects.toEqual(error);
-    expect(window.location.href).not.toBe('/login');
+    expect(navigateTo).not.toHaveBeenCalled();
   });
 
   it('NO redirige cuando recibe 401 en /reset-password', async () => {
-    window.location.pathname = '/reset-password';
+    window.history.replaceState({}, '', '/reset-password');
     const error = { response: { status: 401 } };
 
     await expect(errorInterceptor(error)).rejects.toEqual(error);
-    expect(window.location.href).not.toBe('/login');
+    expect(navigateTo).not.toHaveBeenCalled();
   });
 
   it('rechaza error de red sin response para permitir detección offline', async () => {
-    window.location.pathname = '/login';
+    window.history.replaceState({}, '', '/login');
     const networkError = { response: undefined, code: 'ERR_NETWORK' };
 
     await expect(errorInterceptor(networkError)).rejects.toEqual(networkError);
