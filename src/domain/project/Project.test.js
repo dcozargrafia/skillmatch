@@ -10,6 +10,7 @@ import {
   DELIVERABLE_STATUS_LABELS,
   getDeliverableStatusLabel,
   getProjectStatusMessage,
+  sortDeliverables,
 } from './Project'
 
 describe('project domain helpers', () => {
@@ -219,6 +220,36 @@ describe('project domain helpers', () => {
       expect(getProjectStatusMessage('completed', [])).toBeNull()
       expect(getProjectStatusMessage('rejected', [])).toBeNull()
       expect(getProjectStatusMessage('cancelled', [])).toBeNull()
+    })
+  })
+
+  describe('sortDeliverables', () => {
+    it('places active deliverables before approved/rejected ones', () => {
+      const deliverables = [
+        { id: 1, status: 'approved', created_at: '2025-01-01' },
+        { id: 2, status: 'pending', created_at: '2025-01-02' },
+        { id: 3, status: 'in_progress', created_at: '2025-01-03' },
+        { id: 4, status: 'in_review', created_at: '2025-01-04' },
+        { id: 5, status: 'rejected', created_at: '2025-01-05' },
+      ]
+      const sorted = sortDeliverables(deliverables)
+      const statuses = sorted.map((d) => d.status)
+      expect(statuses).toEqual(['in_review', 'in_progress', 'pending', 'rejected', 'approved'])
+    })
+
+    it('sorts same-status items by created_at descending (newest first)', () => {
+      const deliverables = [
+        { id: 1, status: 'pending', created_at: '2025-01-01' },
+        { id: 2, status: 'pending', created_at: '2025-01-03' },
+        { id: 3, status: 'pending', created_at: '2025-01-02' },
+      ]
+      const sorted = sortDeliverables(deliverables)
+      expect(sorted.map((d) => d.id)).toEqual([2, 3, 1])
+    })
+
+    it('returns an empty array for undefined or empty input', () => {
+      expect(sortDeliverables(undefined)).toEqual([])
+      expect(sortDeliverables([])).toEqual([])
     })
   })
 })

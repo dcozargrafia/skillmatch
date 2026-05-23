@@ -97,3 +97,20 @@ export function getProjectStatusMessage(status, deliverables = []) {
   }
   return 'Esperando que la ONG marque el proyecto como completado o cree otro entregable.'
 }
+
+export const DELIVERABLE_STATUS_PRIORITY = {
+  pending: 2,
+  in_progress: 1,
+  in_review: 0,
+  approved: 4,
+  rejected: 3,
+}
+
+export function sortDeliverables(deliverables = []) {
+  return [...deliverables].sort((a, b) => {
+    const pa = DELIVERABLE_STATUS_PRIORITY[a.status] ?? 5
+    const pb = DELIVERABLE_STATUS_PRIORITY[b.status] ?? 5
+    if (pa !== pb) return pa - pb
+    return new Date(b.created_at) - new Date(a.created_at)
+  })
+}
