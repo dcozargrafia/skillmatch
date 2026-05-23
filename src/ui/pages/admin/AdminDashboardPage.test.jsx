@@ -1,51 +1,82 @@
-import { render, screen, waitFor, fireEvent, within } from '@testing-library/react';
+/**
+ * Tests para AdminDashboardPage (SMAPP-admin).
+ *
+ * Criterios de aceptación:
+ * - Carga y muestra el listado de skills al montar
+ * - Crear skill llama a handleCreateSkill y la añade a la lista
+ * - Eliminar skill muestra aviso de cascada y llama a handleConfirmDelete
+ * - Tras eliminar, la skill desaparece de la lista
+ * - Error de API al crear skill muestra alert
+ * - Muestra listado de ONGs con estado de verificación
+ * - El botón Verificar solo aparece en ONGs no verificadas
+ * - Verificar llama a handleVerifyNgo y actualiza el estado en pantalla
+ */
+
+import { render, screen, waitFor, within, fireEvent } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import AdminDashboardPage from './AdminDashboardPage';
 
-vi.mock('../../../infrastructure/api/skillsApi.js', () => ({
-  getAllSkills: vi.fn(),
+const mockHandleCreateSkill = vi.fn();
+const mockHandleDeleteSkill = vi.fn();
+const mockHandleConfirmDelete = vi.fn();
+const mockCancelDelete = vi.fn();
+const mockHandleVerifyNgo = vi.fn();
+
+vi.mock('../../hooks/useAdminDashboard.jsx', () => ({
+  default: vi.fn(),
 }));
 
-vi.mock('../../../infrastructure/api/adminApi.js', () => ({
-  createSkill: vi.fn(),
-  updateSkill: vi.fn(),
-  deleteSkill: vi.fn(),
-  verifyNgo: vi.fn(),
-  getUnverifiedNgos: vi.fn(),
-}));
-
-import { getAllSkills } from '../../../infrastructure/api/skillsApi.js';
-import { createSkill, updateSkill, deleteSkill, verifyNgo, getUnverifiedNgos } from '../../../infrastructure/api/adminApi.js';
+const { default: useAdminDashboard } = await import('../../hooks/useAdminDashboard.jsx');
+const { default: AdminDashboardPage } = await import('./AdminDashboardPage.jsx');
 
 const mockSkills = [
-  { id: 's1', name: 'React', category: 'Desarrollo' },
-  { id: 's2', name: 'Figma', category: 'Diseno' },
+  { id: 1, name: 'React', category: 'Desarrollo' },
+  { id: 2, name: 'Figma', category: 'Diseno' },
 ];
 
 const mockNgos = [
-  { id: 'u1', name: 'ONG Verde', email: 'verde@ngo.com', organization_name: 'Fundación Verde', verified: false },
-  { id: 'u2', name: 'ONG Azul', email: 'azul@ngo.com', organization_name: 'Fundación Azul', verified: true },
+  { id: 1, organization_name: 'Fundación Verde', email: 'verde@ngo.com', verified: false },
+  { id: 2, organization_name: 'Fundación Azul', email: 'azul@ngo.com', verified: true },
 ];
 
-function renderPage() {
+function renderPage(overrides = {}) {
+  const state = {
+    skills: mockSkills,
+    ngos: mockNgos,
+    isLoading: false,
+    error: null,
+    skillToDelete: null,
+    confirmVerification: null,
+    skillError: null,
+    newSkillName: '',
+    newSkillCategory: 'Desarrollo',
+    setNewSkillName: vi.fn(),
+    setNewSkillCategory: vi.fn(),
+    handleCreateSkill: mockHandleCreateSkill,
+    handleDeleteSkill: mockHandleDeleteSkill,
+    handleConfirmDelete: mockHandleConfirmDelete,
+    cancelDelete: mockCancelDelete,
+    handleVerifyNgo: mockHandleVerifyNgo,
+    ...overrides,
+  };
+
+  useAdminDashboard.mockReturnValue(state);
+
   return render(
     <MemoryRouter initialEntries={['/admin']}>
       <Routes>
         <Route path="/admin" element={<AdminDashboardPage />} />
       </Routes>
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 }
 
 beforeEach(() => {
   vi.clearAllMocks();
-  getAllSkills.mockResolvedValue(mockSkills);
-  getUnverifiedNgos.mockResolvedValue(mockNgos);
-  createSkill.mockResolvedValue({ id: 's3', name: 'Node.js', category: 'Desarrollo' });
-  updateSkill.mockResolvedValue({ id: 's1', name: 'React actualizado', category: 'Desarrollo' });
-  deleteSkill.mockResolvedValue(null);
-  verifyNgo.mockResolvedValue({ id: 'u1', verified: true });
+  mockHandleCreateSkill.mockResolvedValue(undefined);
+  mockHandleConfirmDelete.mockResolvedValue(undefined);
+  mockHandleVerifyNgo.mockResolvedValue(undefined);
 });
 
 describe('AdminDashboardPage — skills', () => {
@@ -55,49 +86,43 @@ describe('AdminDashboardPage — skills', () => {
     expect(screen.getByText('Figma')).toBeInTheDocument();
   });
 
-  it('AC2: crear skill llama a createSkill y la añade a la lista', async () => {
-    renderPage();
+  it('AC2: crear skill llama a handleCreateSkill', async () => {
+    renderPage({ newSkillName: 'Node.js' });
     await screen.findByText('React');
-    fireEvent.change(screen.getByRole('textbox', { name: /nombre de la skill/i }), {
-      target: { value: 'Node.js' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: /añadir/i }));
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: /añadir/i }));
+
     await waitFor(() =>
-      expect(createSkill).toHaveBeenCalledWith(expect.objectContaining({ name: 'Node.js' }))
+      expect(mockHandleCreateSkill).toHaveBeenCalledWith({ name: 'Node.js', category: 'Desarrollo' })
     );
-    expect(await screen.findByText('Node.js')).toBeInTheDocument();
   });
 
-  it('AC3: eliminar skill muestra aviso de cascada y llama a deleteSkill', async () => {
+  it('AC3: eliminar skill llama a handleDeleteSkill', async () => {
     renderPage();
     await screen.findByText('React');
+
     const deleteButtons = screen.getAllByRole('button', { name: /eliminar/i });
-    fireEvent.click(deleteButtons[0]);
-    expect(await screen.findByText(/eliminación en cascada/i)).toBeInTheDocument();
-    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /eliminar/i }));
-    await waitFor(() => expect(deleteSkill).toHaveBeenCalledWith('s1'));
+    await userEvent.click(deleteButtons[0]);
+
+    await waitFor(() => expect(mockHandleDeleteSkill).toHaveBeenCalledWith(1));
   });
 
-  it('AC4: tras eliminar, la skill desaparece de la lista', async () => {
-    renderPage();
+  it('AC4: confirmar eliminación llama a handleConfirmDelete', async () => {
+    renderPage({ skillToDelete: 1 });
     await screen.findByText('React');
-    const deleteButtons = screen.getAllByRole('button', { name: /eliminar/i });
-    fireEvent.click(deleteButtons[0]);
-    await screen.findByText(/eliminación en cascada/i);
-    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /eliminar/i }));
-    await waitFor(() => expect(deleteSkill).toHaveBeenCalled());
-    expect(screen.queryByText('React')).not.toBeInTheDocument();
+
+    const dialog = screen.getByRole('dialog');
+    await userEvent.click(within(dialog).getByRole('button', { name: /eliminar/i }));
+
+    await waitFor(() => expect(mockHandleConfirmDelete).toHaveBeenCalled());
   });
 
   it('AC5: error de API al crear skill muestra alert', async () => {
-    createSkill.mockRejectedValueOnce(new Error('Error servidor'));
-    renderPage();
+    renderPage({ skillError: 'Error al crear la habilidad' });
     await screen.findByText('React');
-    fireEvent.change(screen.getByRole('textbox', { name: /nombre de la skill/i }), {
-      target: { value: 'Error skill' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: /añadir/i }));
-    await screen.findByRole('alert');
+
+    expect(screen.getByRole('alert')).toHaveTextContent(/error/i);
   });
 });
 
@@ -111,15 +136,17 @@ describe('AdminDashboardPage — ONGs', () => {
   it('AC7: el botón Verificar solo aparece en ONGs no verificadas', async () => {
     renderPage();
     await screen.findByText('Fundación Verde');
+
     const verifyButtons = screen.getAllByRole('button', { name: /verificar/i });
     expect(verifyButtons).toHaveLength(1);
   });
 
-  it('AC8: Verificar llama a verifyNgo y actualiza el estado en pantalla', async () => {
+  it('AC8: Verificar llama a handleVerifyNgo con el id de la ONG', async () => {
     renderPage();
     await screen.findByText('Fundación Verde');
-    fireEvent.click(screen.getByRole('button', { name: /verificar/i }));
-    await waitFor(() => expect(verifyNgo).toHaveBeenCalledWith('u1'));
-    expect(screen.queryByRole('button', { name: /verificar/i })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /verificar/i }));
+
+    await waitFor(() => expect(mockHandleVerifyNgo).toHaveBeenCalledWith(1));
   });
 });

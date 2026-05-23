@@ -1,44 +1,35 @@
-import { useEffect, useState } from 'react';
-import { getAllSkills } from '../../../infrastructure/api/skillsApi.js';
-import { createSkill, deleteSkill, verifyNgo, getUnverifiedNgos } from '../../../infrastructure/api/adminApi.js';
+import useAdminDashboard from '../../hooks/useAdminDashboard.jsx';
 
 const CATEGORIES = ['Desarrollo', 'Diseno', 'CMS', 'Marketing'];
 
 function AdminDashboardPage() {
-  const [skills, setSkills] = useState([]);
-  const [ngos, setNgos] = useState([]);
-  const [newSkillName, setNewSkillName] = useState('');
-  const [newSkillCategory, setNewSkillCategory] = useState(CATEGORIES[0]);
-  const [skillError, setSkillError] = useState('');
-  const [pendingDeleteId, setPendingDeleteId] = useState(null);
+  const {
+    skills,
+    ngos,
+    isLoading,
+    error,
+    skillToDelete,
+    skillError,
+    newSkillName,
+    newSkillCategory,
+    setNewSkillName,
+    setNewSkillCategory,
+    handleCreateSkill,
+    handleDeleteSkill,
+    handleConfirmDelete,
+    cancelDelete,
+    handleVerifyNgo,
+  } = useAdminDashboard();
 
-  useEffect(() => {
-    getAllSkills().then(setSkills);
-    getUnverifiedNgos().then(setNgos);
-  }, []);
-
-  async function handleCreateSkill(e) {
-    e.preventDefault();
-    setSkillError('');
-    if (!newSkillName.trim()) return;
-    try {
-      const created = await createSkill({ name: newSkillName.trim(), category: newSkillCategory });
-      setSkills((prev) => [...prev, created]);
-      setNewSkillName('');
-    } catch {
-      setSkillError('Error al crear la skill. Intenta de nuevo.');
-    }
-  }
-
-  async function handleConfirmDelete() {
-    await deleteSkill(pendingDeleteId);
-    setSkills((prev) => prev.filter((s) => s.id !== pendingDeleteId));
-    setPendingDeleteId(null);
-  }
-
-  async function handleVerifyNgo(userId) {
-    await verifyNgo(userId);
-    setNgos((prev) => prev.map((n) => (n.id === userId ? { ...n, verified: true } : n)));
+  if (isLoading) {
+    return (
+      <div>
+        <div className="page-header">
+          <h1 className="page-title">Panel de administración</h1>
+        </div>
+        <div className="loading">Cargando...</div>
+      </div>
+    );
   }
 
   return (
@@ -47,8 +38,14 @@ function AdminDashboardPage() {
         <h1 className="page-title">Panel de administración</h1>
       </div>
 
+      {error && (
+        <div className="alert alert--error" role="alert" style={{ marginBottom: 'var(--space-4)' }}>
+          {error}
+        </div>
+      )}
+
       {/* Diálogo de confirmación de eliminación */}
-      {pendingDeleteId && (
+      {skillToDelete && (
         <div className="dialog-overlay">
           <div className="dialog" role="dialog">
             <h2 className="dialog__title">Eliminar skill</h2>
@@ -56,7 +53,7 @@ function AdminDashboardPage() {
               Esta acción realizará una eliminación en cascada de todos los datos relacionados. Esta operación no se puede deshacer.
             </p>
             <div className="dialog__actions">
-              <button className="btn btn--secondary" onClick={() => setPendingDeleteId(null)}>
+              <button className="btn btn--secondary" onClick={cancelDelete}>
                 Cancelar
               </button>
               <button className="btn btn--danger" onClick={handleConfirmDelete}>
@@ -80,7 +77,7 @@ function AdminDashboardPage() {
         )}
 
         <div className="card card--elevated" style={{ maxWidth: '560px', marginBottom: 'var(--space-6)' }}>
-          <form onSubmit={handleCreateSkill} style={{ display: 'flex', gap: 'var(--space-4)', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+          <form onSubmit={(e) => { e.preventDefault(); handleCreateSkill({ name: newSkillName, category: newSkillCategory }); }} style={{ display: 'flex', gap: 'var(--space-4)', flexWrap: 'wrap', alignItems: 'flex-end' }}>
             <div className="toolbar__group" style={{ flex: 2 }}>
               <label className="form-label">Nombre de la skill</label>
               <input
@@ -113,7 +110,7 @@ function AdminDashboardPage() {
                 <span className="skill-tag">{s.name}</span>
                 <span className="badge">{s.category}</span>
               </div>
-              <button className="btn btn--danger btn--sm" onClick={() => setPendingDeleteId(s.id)}>
+              <button className="btn btn--danger btn--sm" onClick={() => handleDeleteSkill(s.id)}>
                 Eliminar
               </button>
             </div>
