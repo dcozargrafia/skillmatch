@@ -42,11 +42,11 @@ function NgoProjectFormPage() {
       estimated_hours: estimatedHours ? Number(estimatedHours) : undefined,
       deadline: deadline || undefined,
       modality,
-      skills: selectedSkills,
+      ...(selectedSkills.length > 0 ? { skills: selectedSkills } : {}),
     };
 
     const result = mode === 'edit'
-      ? await onSubmit(data, selectedSkills)
+      ? await onSubmit(data, selectedSkills.length > 0 ? selectedSkills : undefined)
       : await onSubmit(data);
     if (result) {
       navigate(`/ngo/projects/${result.id}`);

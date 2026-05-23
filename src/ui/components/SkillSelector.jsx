@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import './SkillSelector.css';
 
 const CATEGORY_ORDER = ['Desarrollo', 'Diseño', 'CMS', 'Marketing'];
@@ -99,3 +100,20 @@ export function SkillSelector({ skills, selectedSkills, onChange }) {
     </div>
   );
 }
+
+SkillSelector.propTypes = {
+  skills: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+      category: PropTypes.string.isRequired,
+    })
+  ).isRequired,
+  selectedSkills: PropTypes.arrayOf(
+    PropTypes.shape({
+      skill_id: PropTypes.string.isRequired,
+      required_level: PropTypes.oneOf(['basic', 'intermediate', 'advanced']).isRequired,
+    })
+  ).isRequired,
+  onChange: PropTypes.func.isRequired,
+};
