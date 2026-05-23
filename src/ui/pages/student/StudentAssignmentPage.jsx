@@ -4,6 +4,7 @@ import useStudentAssignment from '../../hooks/useStudentAssignment.jsx';
 import useStudentCertificate from '../../hooks/useStudentCertificate.jsx';
 import useStudentReview from '../../hooks/useStudentReview.jsx';
 import { DeliverableCard } from '../../components/DeliverableCard.jsx';
+import { getStatusLabel, getProjectStatusMessage, sortDeliverables } from '../../../domain/project/Project.js';
 
 function StudentAssignmentPage() {
   const { id } = useParams();
@@ -39,7 +40,7 @@ function StudentAssignmentPage() {
           <h1 className="page-title">{assignment?.project_title}</h1>
           <p className="page-subtitle font-mono">{assignment?.start_date}</p>
         </div>
-        <span className="badge">{assignment?.project_status}</span>
+        <span className="badge">{getStatusLabel(assignment?.project_status)}</span>
       </div>
 
       {assignment?.project_status === 'assigned' && (
@@ -114,8 +115,16 @@ function StudentAssignmentPage() {
         <div className="section__header">
           <h2 className="section__title">Entregables</h2>
         </div>
+        {(() => {
+          const msg = getProjectStatusMessage(assignment?.project_status, deliverables);
+          return msg ? (
+            <div className="card__body" style={{ marginBottom: 'var(--space-4)' }}>
+              <p className="text-muted text-sm">{msg}</p>
+            </div>
+          ) : null;
+        })()}
         <div className="item-list">
-          {deliverables.map((d) => (
+          {sortDeliverables(deliverables).map((d) => (
             <DeliverableCard
               key={d.id}
               deliverable={d}

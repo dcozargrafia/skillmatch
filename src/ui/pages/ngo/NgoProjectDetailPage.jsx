@@ -6,6 +6,9 @@ import {
   hasActiveDeliverable,
   isTerminalStatus,
   canCompleteProject,
+  getStatusLabel,
+  getProjectStatusMessage,
+  sortDeliverables,
 } from '../../../domain/project/Project.js';
 import { canCancelProject } from '../../../domain/ngo/Ngo.js';
 
@@ -109,7 +112,7 @@ function NgoProjectDetailPage() {
             </button>
           )}
           <span className="badge">{project.modality}</span>
-          <span className="badge">{project.status}</span>
+          <span className="badge">{getStatusLabel(project.status)}</span>
         </div>
       </div>
 
@@ -173,6 +176,11 @@ function NgoProjectDetailPage() {
             <div className="section__header">
               <h2 className="section__title">Entregables</h2>
             </div>
+            {getProjectStatusMessage(project.status, deliverables) && (
+              <div className="card__body" style={{ marginBottom: 'var(--space-4)' }}>
+                <p className="text-muted text-sm">{getProjectStatusMessage(project.status, deliverables)}</p>
+              </div>
+            )}
             {deliverables.length === 0 && (
               <div className="empty-state">
                 <p className="empty-state__text">No hay entregables todavía.</p>
@@ -180,7 +188,7 @@ function NgoProjectDetailPage() {
             )}
             {deliverables.length > 0 && (
               <div className="item-list">
-                {deliverables.map((d) => (
+                {sortDeliverables(deliverables).map((d) => (
                   <DeliverableCard
                     key={d.id}
                     deliverable={d}

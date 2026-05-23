@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import useStudentAssignments from '../../hooks/useStudentAssignments.jsx';
 import { DeliverableCard } from '../../components/DeliverableCard.jsx';
+import { getStatusLabel, getProjectStatusMessage, sortDeliverables } from '../../../domain/project/Project.js';
 
 function StudentApplicationsPage() {
   const {
@@ -32,30 +33,39 @@ function StudentApplicationsPage() {
       </div>
 
       <div className="item-list">
-        {assignments.map((assignment) => (
-          <div key={assignment.id} className="card">
-            <div className="card__header">
-              <div>
-                <h2 className="card__title">{assignment.project_title}</h2>
+        {assignments.map((assignment) => {
+          const deliverables = sortDeliverables(deliverablesByAssignment[assignment.id] || []);
+          const statusMessage = getProjectStatusMessage(assignment.project_status, deliverables);
+          return (
+            <div key={assignment.id} className="card">
+              <div className="card__header">
+                <div>
+                  <h2 className="card__title">{assignment.project_title}</h2>
+                </div>
+                <span className="badge">{getStatusLabel(assignment.project_status)}</span>
               </div>
-              <span className="badge">{assignment.project_status}</span>
+              {statusMessage && (
+                <div className="card__body">
+                  <p className="text-muted text-sm">{statusMessage}</p>
+                </div>
+              )}
+              <div className="card__body">
+                {deliverables.map((d) => (
+                  <DeliverableCard
+                    key={d.id}
+                    deliverable={d}
+                    variant="student"
+                  />
+                ))}
+              </div>
+              <div className="card__footer">
+                <Link to={`/student/assignments/${assignment.id}`} className="btn btn--secondary btn--sm">
+                  Ver detalles
+                </Link>
+              </div>
             </div>
-            <div className="card__body">
-              {(deliverablesByAssignment[assignment.id] || []).map((d) => (
-                <DeliverableCard
-                  key={d.id}
-                  deliverable={d}
-                  variant="student"
-                />
-              ))}
-            </div>
-            <div className="card__footer">
-              <Link to={`/student/assignments/${assignment.id}`} className="btn btn--secondary btn--sm">
-                Ver detalles
-              </Link>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
