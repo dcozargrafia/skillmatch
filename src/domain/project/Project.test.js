@@ -11,6 +11,7 @@ import {
   getDeliverableStatusLabel,
   getProjectStatusMessage,
   sortDeliverables,
+  validateProject,
 } from './Project'
 
 describe('project domain helpers', () => {
@@ -250,6 +251,66 @@ describe('project domain helpers', () => {
     it('returns an empty array for undefined or empty input', () => {
       expect(sortDeliverables(undefined)).toEqual([])
       expect(sortDeliverables([])).toEqual([])
+    })
+  })
+
+  describe('validateProject', () => {
+    it('valid payload returns trimmed values + empty errors', () => {
+      const input = {
+        title: '  My Project  ',
+        description: '  A description  ',
+        objectives: '  Goals here  ',
+        estimated_hours: 10,
+        deadline: '2026-06-01',
+        modality: '  online  ',
+      }
+      const result = validateProject(input)
+      expect(result.errors).toEqual({})
+      expect(result.values.title).toBe('My Project')
+      expect(result.values.description).toBe('A description')
+      expect(result.values.objectives).toBe('Goals here')
+      expect(result.values.estimated_hours).toBe(10)
+      expect(result.values.deadline).toBe('2026-06-01')
+      expect(result.values.modality).toBe('online')
+    })
+
+    it('blank/empty title returns errors.title = "El título es obligatorio."', () => {
+      const result = validateProject({ title: '' })
+      expect(result.errors.title).toBe('El título es obligatorio.')
+    })
+
+    it('whitespace-only title triggers error', () => {
+      const result = validateProject({ title: '   ' })
+      expect(result.errors.title).toBe('El título es obligatorio.')
+    })
+
+    it('omitted optional fields succeed with no errors', () => {
+      const result = validateProject({ title: 'Valid Title' })
+      expect(result.errors).toEqual({})
+      expect(result.values.title).toBe('Valid Title')
+      expect(result.values.description).toBeUndefined()
+      expect(result.values.objectives).toBeUndefined()
+      expect(result.values.estimated_hours).toBeUndefined()
+      expect(result.values.deadline).toBeUndefined()
+      expect(result.values.modality).toBeUndefined()
+    })
+
+    it('string fields are trimmed, non-string optionals pass through unchanged', () => {
+      const input = {
+        title: '  Title  ',
+        description: '  Desc  ',
+        objectives: '  Obj  ',
+        estimated_hours: null,
+        deadline: null,
+        modality: '  remote  ',
+      }
+      const result = validateProject(input)
+      expect(result.values.title).toBe('Title')
+      expect(result.values.description).toBe('Desc')
+      expect(result.values.objectives).toBe('Obj')
+      expect(result.values.estimated_hours).toBe(null)
+      expect(result.values.deadline).toBe(null)
+      expect(result.values.modality).toBe('remote')
     })
   })
 })

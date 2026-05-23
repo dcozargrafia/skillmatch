@@ -114,3 +114,19 @@ export function sortDeliverables(deliverables = []) {
     return new Date(b.created_at) - new Date(a.created_at)
   })
 }
+
+export function validateProject({ title, description, objectives, estimated_hours, deadline, modality }) {
+  const values = {
+    title: (title ?? '').trim(),
+    description: typeof description === 'string' ? description.trim() : description,
+    objectives: typeof objectives === 'string' ? objectives.trim() : objectives,
+    estimated_hours,
+    deadline,
+    modality: typeof modality === 'string' ? modality.trim() : modality,
+  }
+  const errors = {}
+  if (!values.title) {
+    errors.title = 'El título es obligatorio.'
+  }
+  return { values, errors }
+}

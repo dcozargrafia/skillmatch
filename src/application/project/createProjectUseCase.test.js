@@ -8,14 +8,14 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createProject } from '../../infrastructure/api/projectApi.js';
-import { validateNgoProfile } from '../../domain/ngo/Ngo.js';
+import { validateProject } from '../../domain/project/Project.js';
 
 vi.mock('../../infrastructure/api/projectApi.js', () => ({
   createProject: vi.fn(),
 }));
 
-vi.mock('../../domain/ngo/Ngo.js', () => ({
-  validateNgoProfile: vi.fn(),
+vi.mock('../../domain/project/Project.js', () => ({
+  validateProject: vi.fn(),
 }));
 
 const { createProjectUseCase } = await import('./createProjectUseCase.js');
@@ -33,7 +33,7 @@ describe('createProjectUseCase', () => {
     };
     const mockCreatedProject = { id: 'p1', ...projectData, status: 'pending' };
 
-    validateNgoProfile.mockReturnValue({ values: projectData, errors: {} });
+    validateProject.mockReturnValue({ values: projectData, errors: {} });
     createProject.mockResolvedValue(mockCreatedProject);
 
     const result = await createProjectUseCase(projectData);
@@ -42,14 +42,14 @@ describe('createProjectUseCase', () => {
     expect(result).toEqual(mockCreatedProject);
   });
 
-  it('propaga error si validateNgoProfile retorna errores', async () => {
+  it('propaga error si validateProject retorna errores', async () => {
     const projectData = { title: '', description: 'Desc' };
-    validateNgoProfile.mockReturnValue({
+    validateProject.mockReturnValue({
       values: { title: '' },
-      errors: { title: 'Title is required' },
+      errors: { title: 'El título es obligatorio.' },
     });
 
-    await expect(createProjectUseCase(projectData)).rejects.toThrow('Title is required');
+    await expect(createProjectUseCase(projectData)).rejects.toThrow('El título es obligatorio.');
     expect(createProject).not.toHaveBeenCalled();
   });
 
@@ -57,7 +57,7 @@ describe('createProjectUseCase', () => {
     const projectData = { title: 'New Project', description: 'Desc' };
     const mockProject = { id: 'p2', title: 'New Project', status: 'pending' };
 
-    validateNgoProfile.mockReturnValue({ values: projectData, errors: {} });
+    validateProject.mockReturnValue({ values: projectData, errors: {} });
     createProject.mockResolvedValue(mockProject);
 
     const result = await createProjectUseCase(projectData);
@@ -67,7 +67,7 @@ describe('createProjectUseCase', () => {
 
   it('propaga error si createProject falla', async () => {
     const projectData = { title: 'Test', description: 'Desc' };
-    validateNgoProfile.mockReturnValue({ values: projectData, errors: {} });
+    validateProject.mockReturnValue({ values: projectData, errors: {} });
     createProject.mockRejectedValue(new Error('Server error'));
 
     await expect(createProjectUseCase(projectData)).rejects.toThrow('Server error');
