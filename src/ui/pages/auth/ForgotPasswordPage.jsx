@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import useForgotPassword from '../../hooks/useForgotPassword.jsx';
+import { AlertBlock } from '../../components/AlertBlock.jsx';
 
 function ForgotPasswordPage() {
   const { email, setEmail, error, isLoading, sent, handleSubmit } = useForgotPassword();
@@ -46,7 +47,7 @@ function ForgotPasswordPage() {
           </div>
 
           {error && (
-            <div className="alert alert--error" role="alert">{error}</div>
+            <AlertBlock variant="error">{error}</AlertBlock>
           )}
 
           <button type="submit" className="btn btn--primary" disabled={isLoading}>

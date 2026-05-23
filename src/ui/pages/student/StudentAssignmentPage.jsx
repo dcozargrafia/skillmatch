@@ -6,6 +6,7 @@ import useStudentReview from '../../hooks/useStudentReview.jsx';
 import { DeliverableCard } from '../../components/DeliverableCard.jsx';
 import { PageHeader } from '../../components/PageHeader.jsx';
 import { getStatusLabel, getProjectStatusMessage, sortDeliverables } from '../../../domain/project/Project.js';
+import { AlertBlock } from '../../components/AlertBlock.jsx';
 
 function StudentAssignmentPage() {
   const { id } = useParams();
@@ -65,9 +66,9 @@ function StudentAssignmentPage() {
         </div>
       )}
       {certError && (
-        <div className="alert alert--error" role="alert" style={{ marginBottom: 'var(--space-4)' }}>
+        <AlertBlock variant="error" style={{ marginBottom: 'var(--space-4)' }}>
           {certError}
-        </div>
+        </AlertBlock>
       )}
 
       {assignment?.project_status === 'completed' && !reviewSent && (
@@ -99,7 +100,7 @@ function StudentAssignmentPage() {
               />
             </div>
             {reviewError && (
-              <div className="alert alert--error" role="alert">{reviewError}</div>
+              <AlertBlock variant="error">{reviewError}</AlertBlock>
             )}
           </div>
           <div className="card__footer">

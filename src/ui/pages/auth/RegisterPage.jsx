@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { registerUseCase } from '../../../application/auth/registerUseCase.js';
+import { AlertBlock } from '../../components/AlertBlock.jsx';
 
 function RegisterPage() {
   const navigate = useNavigate();
@@ -131,7 +132,7 @@ function RegisterPage() {
           )}
 
           {error && (
-            <div className="alert alert--error" role="alert">{error}</div>
+            <AlertBlock variant="error">{error}</AlertBlock>
           )}
 
           <button type="submit" className="btn btn--primary" disabled={isLoading}>

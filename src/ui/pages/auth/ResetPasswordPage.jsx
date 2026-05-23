@@ -1,5 +1,6 @@
 import { useSearchParams, Link } from 'react-router-dom';
 import useResetPassword from '../../hooks/useResetPassword.jsx';
+import { AlertBlock } from '../../components/AlertBlock.jsx';
 
 function ResetPasswordPage() {
   const {
@@ -72,12 +73,12 @@ function ResetPasswordPage() {
           </div>
 
           {error && (
-            <div className="alert alert--error" role="alert">
+            <AlertBlock variant="error">
               {error}
               {errors.confirmPassword && (
                 <> — <Link to="/forgot-password" className="auth-form__link">Solicitar nuevo enlace</Link></>
               )}
-            </div>
+            </AlertBlock>
           )}
 
           <button type="submit" className="btn btn--primary" disabled={isLoading}>

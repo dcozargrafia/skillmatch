@@ -4,6 +4,7 @@ import { getApplicationsByProject } from '../../../infrastructure/api/applicatio
 import { getAssignmentsByProject, createAssignment } from '../../../infrastructure/api/assignmentApi.js';
 import { PageHeader } from '../../components/PageHeader.jsx';
 import { EmptyState } from '../../components/EmptyState.jsx';
+import { AlertBlock } from '../../components/AlertBlock.jsx';
 
 function NgoProjectAssignmentPage() {
   const { id } = useParams();
@@ -42,9 +43,9 @@ function NgoProjectAssignmentPage() {
       <PageHeader title="Asignación del proyecto" />
 
       {errorMsg && (
-        <div className="alert alert--error" role="alert" style={{ marginBottom: 'var(--space-5)' }}>
+        <AlertBlock variant="error" style={{ marginBottom: 'var(--space-5)' }}>
           {errorMsg}
-        </div>
+        </AlertBlock>
       )}
 
       {loading && <p className="loading">Cargando...</p>}
