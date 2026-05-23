@@ -54,6 +54,19 @@ beforeEach(() => {
 });
 
 describe('useAdminDashboard', () => {
+  it('inicializa la nueva skill con la categoría por defecto visible en el select', async () => {
+    mockGetSkillsUseCase.mockResolvedValue(mockSkills);
+    mockGetUnverifiedNgosUseCase.mockResolvedValue(mockNgos);
+
+    const { result } = renderHook(() => useAdminDashboard());
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.newSkillCategory).toBe('Desarrollo');
+  });
+
   it('carga skills y ngos al montar', async () => {
     mockGetSkillsUseCase.mockResolvedValue(mockSkills);
     mockGetUnverifiedNgosUseCase.mockResolvedValue(mockNgos);
@@ -110,6 +123,7 @@ describe('useAdminDashboard', () => {
 
     expect(mockCreateSkillUseCase).toHaveBeenCalledWith({ name: 'Node.js', category: 'Backend' });
     expect(result.current.skills).toContainEqual(newSkill);
+    expect(result.current.newSkillCategory).toBe('Desarrollo');
   });
 
   it('deleteSkill solicita confirmación y luego elimina', async () => {
