@@ -7,6 +7,10 @@ import {
   getStatusLabel,
   canCompleteProject,
   canCreateDeliverable,
+  DELIVERABLE_STATUS_LABELS,
+  getDeliverableStatusLabel,
+  getProjectStatusMessage,
+  sortDeliverables,
 } from './Project'
 
 describe('project domain helpers', () => {
@@ -161,6 +165,91 @@ describe('project domain helpers', () => {
       const project = { id: 1, assignment_id: 5, status: 'in_progress' }
       const deliverables = [{ id: 1, status: 'in_progress' }]
       expect(canCreateDeliverable(project, deliverables)).toBe(false)
+    })
+  })
+
+  describe('DELIVERABLE_STATUS_LABELS', () => {
+    it('exposes mapping for all five deliverable statuses', () => {
+      expect(DELIVERABLE_STATUS_LABELS).toEqual({
+        pending: 'Pendiente',
+        in_progress: 'En progreso',
+        in_review: 'En revisión',
+        approved: 'Aprobado',
+        rejected: 'Rechazado',
+      })
+    })
+  })
+
+  describe('getDeliverableStatusLabel', () => {
+    it('returns Spanish label for known deliverable statuses', () => {
+      expect(getDeliverableStatusLabel('pending')).toBe('Pendiente')
+      expect(getDeliverableStatusLabel('in_progress')).toBe('En progreso')
+      expect(getDeliverableStatusLabel('in_review')).toBe('En revisión')
+      expect(getDeliverableStatusLabel('approved')).toBe('Aprobado')
+      expect(getDeliverableStatusLabel('rejected')).toBe('Rechazado')
+    })
+
+    it('returns the raw status value for unknown statuses', () => {
+      expect(getDeliverableStatusLabel('unknown_status')).toBe('unknown_status')
+    })
+  })
+
+  describe('getProjectStatusMessage', () => {
+    it('returns NGO-waiting copy when status is in_review and a deliverable is not approved', () => {
+      const message = getProjectStatusMessage('in_review', [
+        { id: 1, status: 'approved' },
+        { id: 2, status: 'in_review' },
+      ])
+      expect(message).toBe('Esperando que la ONG apruebe o rechace el último entregable.')
+    })
+
+    it('returns completion-or-new copy when status is in_review and all deliverables are approved', () => {
+      const message = getProjectStatusMessage('in_review', [
+        { id: 1, status: 'approved' },
+        { id: 2, status: 'approved' },
+      ])
+      expect(message).toBe(
+        'Esperando que la ONG marque el proyecto como completado o cree otro entregable.',
+      )
+    })
+
+    it('returns null for non-in_review statuses', () => {
+      expect(getProjectStatusMessage('pending', [])).toBeNull()
+      expect(getProjectStatusMessage('assigned', [])).toBeNull()
+      expect(getProjectStatusMessage('in_progress', [])).toBeNull()
+      expect(getProjectStatusMessage('completed', [])).toBeNull()
+      expect(getProjectStatusMessage('rejected', [])).toBeNull()
+      expect(getProjectStatusMessage('cancelled', [])).toBeNull()
+    })
+  })
+
+  describe('sortDeliverables', () => {
+    it('places active deliverables before approved/rejected ones', () => {
+      const deliverables = [
+        { id: 1, status: 'approved', created_at: '2025-01-01' },
+        { id: 2, status: 'pending', created_at: '2025-01-02' },
+        { id: 3, status: 'in_progress', created_at: '2025-01-03' },
+        { id: 4, status: 'in_review', created_at: '2025-01-04' },
+        { id: 5, status: 'rejected', created_at: '2025-01-05' },
+      ]
+      const sorted = sortDeliverables(deliverables)
+      const statuses = sorted.map((d) => d.status)
+      expect(statuses).toEqual(['in_review', 'in_progress', 'pending', 'rejected', 'approved'])
+    })
+
+    it('sorts same-status items by created_at descending (newest first)', () => {
+      const deliverables = [
+        { id: 1, status: 'pending', created_at: '2025-01-01' },
+        { id: 2, status: 'pending', created_at: '2025-01-03' },
+        { id: 3, status: 'pending', created_at: '2025-01-02' },
+      ]
+      const sorted = sortDeliverables(deliverables)
+      expect(sorted.map((d) => d.id)).toEqual([2, 3, 1])
+    })
+
+    it('returns an empty array for undefined or empty input', () => {
+      expect(sortDeliverables(undefined)).toEqual([])
+      expect(sortDeliverables([])).toEqual([])
     })
   })
 })
