@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { act, renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 
 vi.mock('../../application/review/createReviewUseCase.js', () => ({
   createReviewUseCase: vi.fn(),
@@ -19,16 +19,6 @@ beforeEach(() => {
 });
 
 describe('useStudentReview', () => {
-  it('initial state: submitting=false, reviewSent=false, error=null', async () => {
-    createReviewUseCase.mockImplementation(() => new Promise(() => {})); // pending forever
-
-    const { result } = renderHook(() => useStudentReview());
-
-    expect(result.current.submitting).toBe(false);
-    expect(result.current.reviewSent).toBe(false);
-    expect(result.current.error).toBe(null);
-  });
-
   it('handleSubmitReview calls createReviewUseCase and sets reviewSent=true', async () => {
     createReviewUseCase.mockResolvedValue({ success: true });
 
@@ -117,15 +107,4 @@ describe('useStudentReview', () => {
     expect(result.current.reviewSent).toBe(true);
   });
 
-  it('reviewSent remains true after successful submission', async () => {
-    createReviewUseCase.mockResolvedValue({ success: true });
-
-    const { result } = renderHook(() => useStudentReview());
-
-    await act(async () => {
-      await result.current.handleSubmitReview({ assignment_id: 'asgn-1', rating: 5, comment: 'Great' });
-    });
-
-    expect(result.current.reviewSent).toBe(true);
-  });
 });

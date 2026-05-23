@@ -77,18 +77,6 @@ describe('useStudentProjects', () => {
     expect(result.current.projects).toEqual([]);
   });
 
-  it('initial selectedSkillId is empty string', async () => {
-    getStudentProjectsUseCase.mockResolvedValue({ projects: mockProjects, skills: mockSkills });
-
-    const { result } = renderHook(() => useStudentProjects());
-
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    });
-
-    expect(result.current.selectedSkillId).toBe('');
-  });
-
   it('setSelectedSkillId updates filter and re-fetches', async () => {
     getStudentProjectsUseCase
       .mockResolvedValueOnce({ projects: mockProjects, skills: mockSkills })

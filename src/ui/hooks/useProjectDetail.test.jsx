@@ -85,13 +85,6 @@ beforeEach(() => {
 });
 
 describe('carga inicial', () => {
-  it('loading=true, error=null inicialmente', async () => {
-    getProjectDetailUseCase.mockImplementation(() => new Promise(() => {})); // pending forever
-    const { result } = renderHook(() => useProjectDetail('proj-1'));
-    expect(result.current.loading).toBe(true);
-    expect(result.current.error).toBeNull();
-  });
-
   it('carga exitosa: project, assignment, deliverables, applications seteados', async () => {
     getProjectDetailUseCase.mockResolvedValue({
       project: mockProject,

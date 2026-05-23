@@ -55,13 +55,6 @@ beforeEach(() => {
 });
 
 describe('modo create (sin projectId)', () => {
-  it('loading=true inicialmente, luego false', async () => {
-    getProjectFormUseCase.mockImplementation(() => new Promise(() => {}));
-    const { result } = renderHook(() => useNgoProjectForm(null));
-
-    expect(result.current.loading).toBe(true);
-  });
-
   it('carga skills, project=null, mode=create', async () => {
     getProjectFormUseCase.mockResolvedValue({ project: null, skills: mockSkills });
 

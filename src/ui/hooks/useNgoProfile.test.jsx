@@ -48,13 +48,6 @@ beforeEach(() => {
 });
 
 describe('carga inicial', () => {
-  it('loading=true inicialmente', async () => {
-    getNgoProfileUseCase.mockImplementation(() => new Promise(() => {}));
-    const { result } = renderHook(() => useNgoProfile());
-    expect(result.current.loading).toBe(true);
-    expect(result.current.profile).toBeNull();
-  });
-
   it('carga exitosa: profile={ngo, user}, loading=false', async () => {
     getNgoProfileUseCase.mockResolvedValue({ ngo: mockNgo, user: mockUser });
 

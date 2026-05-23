@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { act, renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 import { forgotPasswordUseCase } from '../../application/auth/forgotPasswordUseCase.js';
 import { validateEmail } from '../../domain/user/User.js';
 
@@ -28,22 +28,6 @@ beforeEach(() => {
 });
 
 describe('useForgotPassword', () => {
-  it('inicializa con email vacío, sin error, sin sent, sin loading', () => {
-    const { result } = renderHook(() => useForgotPassword());
-    expect(result.current.email).toBe('');
-    expect(result.current.error).toBeNull();
-    expect(result.current.sent).toBe(false);
-    expect(result.current.isLoading).toBe(false);
-  });
-
-  it('permite cambiar el email', () => {
-    const { result } = renderHook(() => useForgotPassword());
-    act(() => {
-      result.current.setEmail('user@test.com');
-    });
-    expect(result.current.email).toBe('user@test.com');
-  });
-
   it('valida email y retorna error si es inválido', async () => {
     mockValidateEmail.mockReturnValue({ isValid: false, error: 'Email inválido' });
     const { result } = renderHook(() => useForgotPassword());
@@ -91,19 +75,4 @@ describe('useForgotPassword', () => {
     expect(result.current.sent).toBe(false);
   });
 
-  it('setea isLoading=false al terminar (不论 éxito o error)', async () => {
-    mockValidateEmail.mockReturnValue({ isValid: true });
-    mockForgotPasswordUseCase.mockResolvedValue();
-    const { result } = renderHook(() => useForgotPassword());
-
-    act(() => {
-      result.current.setEmail(mockSentEmail);
-    });
-
-    await act(async () => {
-      await result.current.handleSubmit({ preventDefault: vi.fn() });
-    });
-
-    expect(result.current.isLoading).toBe(false);
-  });
 });

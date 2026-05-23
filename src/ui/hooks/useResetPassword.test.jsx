@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { act, renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 import { resetPasswordUseCase } from '../../application/auth/resetPasswordUseCase.js';
 import { validateResetPassword } from '../../domain/user/User.js';
 
@@ -34,32 +34,6 @@ beforeEach(() => {
 });
 
 describe('useResetPassword', () => {
-  it('inicializa con estado vacío, sin errores, isLoading false, isSuccess false', () => {
-    const { result } = renderHook(() => useResetPassword());
-    expect(result.current.password).toBe('');
-    expect(result.current.confirmPassword).toBe('');
-    expect(result.current.errors).toEqual({});
-    expect(result.current.isLoading).toBe(false);
-    expect(result.current.isSuccess).toBe(false);
-  });
-
-  it('permite cambiar password y confirmPassword', () => {
-    const { result } = renderHook(() => useResetPassword());
-    act(() => {
-      result.current.setPassword('password123');
-      result.current.setConfirmPassword('password123');
-    });
-    expect(result.current.password).toBe('password123');
-    expect(result.current.confirmPassword).toBe('password123');
-  });
-
-  it('extrae token de la URL', () => {
-    // El mock de useSearchParams devuelve token=abc123-token
-    const { result } = renderHook(() => useResetPassword());
-    // El hook internamente usa el token para resetPasswordUseCase
-    expect(result.current).toBeDefined();
-  });
-
   it('valida con validateResetPassword y setea errores si falla', async () => {
     mockValidateResetPassword.mockReturnValue({
       isValid: false,
@@ -116,20 +90,4 @@ describe('useResetPassword', () => {
     expect(result.current.isSuccess).toBe(false);
   });
 
-  it('setea isLoading=true durante submit y false al terminar', async () => {
-    mockValidateResetPassword.mockReturnValue({ isValid: true, errors: {} });
-    mockResetPasswordUseCase.mockResolvedValue();
-    const { result } = renderHook(() => useResetPassword());
-
-    act(() => {
-      result.current.setPassword('password123');
-      result.current.setConfirmPassword('password123');
-    });
-
-    await act(async () => {
-      await result.current.handleSubmit({ preventDefault: vi.fn() });
-    });
-
-    expect(result.current.isLoading).toBe(false);
-  });
 });

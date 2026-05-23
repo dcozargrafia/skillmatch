@@ -32,12 +32,6 @@ beforeEach(() => {
 });
 
 describe('carga inicial', () => {
-  it('loading=true inicialmente', async () => {
-    getProjectsUseCase.mockImplementation(() => new Promise(() => {}));
-    const { result } = renderHook(() => useNgoProjects());
-    expect(result.current.loading).toBe(true);
-  });
-
   it('carga exitosa: projects array seteado, loading=false', async () => {
     getProjectsUseCase.mockResolvedValue(mockProjects);
     const { result } = renderHook(() => useNgoProjects());

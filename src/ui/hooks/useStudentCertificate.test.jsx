@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { act, renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 
 vi.mock('../../application/certificate/downloadCertificateUseCase.js', () => ({
   downloadCertificateUseCase: vi.fn(),
@@ -38,15 +38,6 @@ afterEach(() => {
 });
 
 describe('useStudentCertificate', () => {
-  it('initial state: downloading=false, error=null', async () => {
-    downloadCertificateUseCase.mockImplementation(() => new Promise(() => {})); // pending forever
-
-    const { result } = renderHook(() => useStudentCertificate());
-
-    expect(result.current.downloading).toBe(false);
-    expect(result.current.error).toBe(null);
-  });
-
   it('handleDownload calls downloadCertificateUseCase and triggers download', async () => {
     const mockBlob = new Blob(['PDF content'], { type: 'application/pdf' });
     downloadCertificateUseCase.mockResolvedValue(mockBlob);

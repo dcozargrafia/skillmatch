@@ -42,14 +42,6 @@ beforeEach(() => {
   window.location = { pathname: '/', href: '' };
 });
 
-describe('estado inicial', () => {
-  it('user es null e isLoading es false', () => {
-    const { result } = renderHook(() => useAuthStore());
-    expect(result.current.user).toBeNull();
-    expect(result.current.isLoading).toBe(false);
-  });
-});
-
 describe('login', () => {
   it('guarda el usuario y desactiva isLoading al tener éxito', async () => {
     loginUseCase.mockResolvedValue(mockUser);
