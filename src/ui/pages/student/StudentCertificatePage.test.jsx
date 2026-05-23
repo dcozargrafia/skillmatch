@@ -3,24 +3,27 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import StudentAssignmentPage from './StudentAssignmentPage';
 
-vi.mock('../../../infrastructure/api/assignmentApi.js', () => ({
-  getAssignmentById: vi.fn(),
-  acceptAssignment: vi.fn(),
+vi.mock('../../../ui/hooks/useStudentAssignment.jsx', () => ({
+  default: vi.fn(),
 }));
 
-vi.mock('../../../infrastructure/api/deliverableApi.js', () => ({
-  getDeliverablesByAssignment: vi.fn(),
-  startDeliverable: vi.fn(),
-  submitDeliverable: vi.fn(),
+vi.mock('../../../ui/hooks/useStudentCertificate.jsx', () => ({
+  default: vi.fn(),
 }));
 
-vi.mock('../../../infrastructure/api/certificateApi.js', () => ({
-  downloadCertificate: vi.fn(),
+vi.mock('../../../ui/hooks/useStudentReview.jsx', () => ({
+  default: vi.fn(),
 }));
 
-import { getAssignmentById } from '../../../infrastructure/api/assignmentApi.js';
-import { getDeliverablesByAssignment } from '../../../infrastructure/api/deliverableApi.js';
-import { downloadCertificate } from '../../../infrastructure/api/certificateApi.js';
+vi.mock('../../../ui/components/DeliverableCard.jsx', () => ({
+  DeliverableCard: vi.fn(({ deliverable }) => (
+    <div data-testid="deliverable-card">{deliverable.title} [{deliverable.status}]</div>
+  )),
+}));
+
+import useStudentAssignment from '../../../ui/hooks/useStudentAssignment.jsx';
+import useStudentCertificate from '../../../ui/hooks/useStudentCertificate.jsx';
+import useStudentReview from '../../../ui/hooks/useStudentReview.jsx';
 
 const mockCompletedAssignment = {
   id: 'asgn1',
@@ -40,6 +43,40 @@ const mockInProgressAssignment = {
   certificate_id: null,
 };
 
+function setupAssignmentHook(overrides = {}) {
+  const defaults = {
+    assignment: null,
+    deliverables: [],
+    loading: true,
+    error: null,
+    actions: {
+      handleStartDeliverable: vi.fn(),
+      handleSubmitDeliverable: vi.fn(),
+      handleAcceptAssignment: vi.fn(),
+    },
+  };
+  useStudentAssignment.mockReturnValue({ ...defaults, ...overrides });
+}
+
+function setupCertificateHook(overrides = {}) {
+  const defaults = {
+    downloading: false,
+    error: null,
+    handleDownload: vi.fn(),
+  };
+  useStudentCertificate.mockReturnValue({ ...defaults, ...overrides });
+}
+
+function setupReviewHook(overrides = {}) {
+  const defaults = {
+    submitting: false,
+    reviewSent: false,
+    error: null,
+    handleSubmitReview: vi.fn(),
+  };
+  useStudentReview.mockReturnValue({ ...defaults, ...overrides });
+}
+
 function renderPage(assignmentId = 'asgn1') {
   return render(
     <MemoryRouter initialEntries={[`/student/assignments/${assignmentId}`]}>
@@ -52,35 +89,60 @@ function renderPage(assignmentId = 'asgn1') {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  getDeliverablesByAssignment.mockResolvedValue([]);
-  downloadCertificate.mockResolvedValue(new Blob(['%PDF'], { type: 'application/pdf' }));
+  setupAssignmentHook();
+  setupCertificateHook();
+  setupReviewHook();
 });
 
 describe('StudentAssignmentPage — certificado (HU13)', () => {
   it('AC1: muestra botón Descargar certificado cuando project_status es completed', async () => {
-    getAssignmentById.mockResolvedValue(mockCompletedAssignment);
+    setupAssignmentHook({
+      assignment: mockCompletedAssignment,
+      deliverables: [],
+      loading: false,
+      error: null,
+    });
+    setupCertificateHook();
     renderPage();
     expect(await screen.findByRole('button', { name: /descargar certificado/i })).toBeInTheDocument();
   });
 
   it('AC2: no muestra botón Descargar certificado cuando project_status no es completed', async () => {
-    getAssignmentById.mockResolvedValue(mockInProgressAssignment);
+    setupAssignmentHook({
+      assignment: mockInProgressAssignment,
+      deliverables: [],
+      loading: false,
+      error: null,
+    });
+    setupCertificateHook();
     renderPage('asgn2');
     await screen.findByText('Campaña digital');
     expect(screen.queryByRole('button', { name: /descargar certificado/i })).not.toBeInTheDocument();
   });
 
-  it('AC3: el botón llama a downloadCertificate con el certificate_id', async () => {
-    getAssignmentById.mockResolvedValue(mockCompletedAssignment);
+  it('AC3: el botón llama a handleDownload con el assignment', async () => {
+    const handleDownload = vi.fn();
+    setupAssignmentHook({
+      assignment: mockCompletedAssignment,
+      deliverables: [],
+      loading: false,
+      error: null,
+    });
+    setupCertificateHook({ handleDownload });
     renderPage();
     const btn = await screen.findByRole('button', { name: /descargar certificado/i });
     fireEvent.click(btn);
-    await waitFor(() => expect(downloadCertificate).toHaveBeenCalledWith('cert1'));
+    await waitFor(() => expect(handleDownload).toHaveBeenCalledWith(mockCompletedAssignment));
   });
 
-  it('AC4: muestra error si downloadCertificate falla', async () => {
-    getAssignmentById.mockResolvedValue(mockCompletedAssignment);
-    downloadCertificate.mockRejectedValueOnce(new Error('Error servidor'));
+  it('AC4: muestra error si handleDownload falla', async () => {
+    setupAssignmentHook({
+      assignment: mockCompletedAssignment,
+      deliverables: [],
+      loading: false,
+      error: null,
+    });
+    setupCertificateHook({ error: 'Error al descargar el certificado. Intenta de nuevo.' });
     renderPage();
     const btn = await screen.findByRole('button', { name: /descargar certificado/i });
     fireEvent.click(btn);

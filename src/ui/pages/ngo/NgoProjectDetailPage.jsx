@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import useProjectDetail from '../../hooks/useProjectDetail.jsx';
+import { DeliverableCard } from '../../components/DeliverableCard.jsx';
 import {
   hasActiveDeliverable,
   isTerminalStatus,
@@ -9,49 +10,6 @@ import {
 import { canCancelProject } from '../../../domain/ngo/Ngo.js';
 
 const REVIEW_STATUSES = ['in_review'];
-
-function DeliverableCard({ deliverable, onReview, readOnly }) {
-  const badgeClass =
-    deliverable.status === 'approved'
-      ? 'badge badge--success'
-      : deliverable.status === 'rejected'
-        ? 'badge badge--error'
-        : deliverable.status === 'in_review'
-          ? 'badge badge--warning'
-          : 'badge';
-
-  return (
-    <div className="card">
-      <div className="card__header">
-        <h3 className="card__title">{deliverable.title}</h3>
-        <span className={badgeClass}>{deliverable.status}</span>
-      </div>
-      {deliverable.description && (
-        <div className="card__body">
-          <p>{deliverable.description}</p>
-        </div>
-      )}
-      {!readOnly && deliverable.status === 'in_review' && (
-        <div className="card__footer">
-          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-            <button
-              className="btn btn--primary btn--sm"
-              onClick={() => onReview(deliverable.id, 'approved')}
-            >
-              Aprobar
-            </button>
-            <button
-              className="btn btn--danger btn--sm"
-              onClick={() => onReview(deliverable.id, 'rejected')}
-            >
-              Rechazar
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 function CandidateCard({ application, onSelect, selecting }) {
   return (
@@ -226,7 +184,9 @@ function NgoProjectDetailPage() {
                   <DeliverableCard
                     key={d.id}
                     deliverable={d}
-                    onReview={actions.handleReview}
+                    variant="ngo"
+                    onApprove={(id) => actions.handleReview(id, 'approved')}
+                    onReject={(id) => actions.handleReview(id, 'rejected')}
                     readOnly={readOnly}
                   />
                 ))}

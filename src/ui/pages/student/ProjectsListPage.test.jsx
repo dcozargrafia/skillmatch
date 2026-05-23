@@ -3,16 +3,11 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import ProjectsListPage from './ProjectsListPage';
 
-vi.mock('../../../infrastructure/api/projectApi.js', () => ({
-  getAllProjects: vi.fn(),
+vi.mock('../../../ui/hooks/useStudentProjects.jsx', () => ({
+  default: vi.fn(),
 }));
 
-vi.mock('../../../infrastructure/api/skillsApi.js', () => ({
-  getAllSkills: vi.fn(),
-}));
-
-import { getAllProjects } from '../../../infrastructure/api/projectApi.js';
-import { getAllSkills } from '../../../infrastructure/api/skillsApi.js';
+import useStudentProjects from '../../../ui/hooks/useStudentProjects.jsx';
 
 const mockProjects = [
   {
@@ -52,22 +47,36 @@ function renderPage() {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  getAllProjects.mockResolvedValue(mockProjects);
-  getAllSkills.mockResolvedValue(mockSkills);
 });
 
 describe('ProjectsListPage', () => {
   it('AC1: carga proyectos sin filtro de status al montar', async () => {
-    renderPage();
-    await waitFor(() =>
-      expect(getAllProjects).toHaveBeenCalledWith(expect.not.objectContaining({ status: expect.anything() }))
-    );
-  });
-
-  it('AC2: muestra tarjeta con título, descripción breve, ONG, modalidad, deadline y skills', async () => {
+    useStudentProjects.mockReturnValue({
+      projects: mockProjects,
+      skills: mockSkills,
+      loading: false,
+      error: null,
+      selectedSkillId: '',
+      setSelectedSkillId: vi.fn(),
+      refresh: vi.fn(),
+    });
     renderPage();
     await screen.findByText('App de reciclaje');
+    expect(screen.getByText('App de reciclaje')).toBeInTheDocument();
+  });
 
+  it('AC2: muestra tarjeta con título, descripción, ONG, modalidad, deadline y skills', async () => {
+    useStudentProjects.mockReturnValue({
+      projects: mockProjects,
+      skills: mockSkills,
+      loading: false,
+      error: null,
+      selectedSkillId: '',
+      setSelectedSkillId: vi.fn(),
+      refresh: vi.fn(),
+    });
+    renderPage();
+    await screen.findByText('App de reciclaje');
     expect(screen.getByText('Desarrollar app para gestión de reciclaje')).toBeInTheDocument();
     expect(screen.getByText('Eco ONG')).toBeInTheDocument();
     expect(screen.getByText('remoto')).toBeInTheDocument();
@@ -75,19 +84,36 @@ describe('ProjectsListPage', () => {
     expect(screen.getAllByText('React').length).toBeGreaterThan(0);
   });
 
-  it('AC3b: filtrar por skill llama getAllProjects con skill_id', async () => {
+  it('AC3b: filtrar por skill llama setSelectedSkillId', async () => {
+    const setSelectedSkillId = vi.fn();
+    useStudentProjects.mockReturnValue({
+      projects: mockProjects,
+      skills: mockSkills,
+      loading: false,
+      error: null,
+      selectedSkillId: '',
+      setSelectedSkillId,
+      refresh: vi.fn(),
+    });
     renderPage();
     await screen.findByText('App de reciclaje');
 
     const skillSelect = screen.getByRole('combobox', { name: /skill/i });
     fireEvent.change(skillSelect, { target: { value: 's1' } });
 
-    await waitFor(() =>
-      expect(getAllProjects).toHaveBeenCalledWith(expect.objectContaining({ skill_id: 's1' }))
-    );
+    expect(setSelectedSkillId).toHaveBeenCalledWith('s1');
   });
 
   it('AC3c: no hay dropdown de estado en la toolbar', async () => {
+    useStudentProjects.mockReturnValue({
+      projects: mockProjects,
+      skills: mockSkills,
+      loading: false,
+      error: null,
+      selectedSkillId: '',
+      setSelectedSkillId: vi.fn(),
+      refresh: vi.fn(),
+    });
     renderPage();
     await screen.findByText('App de reciclaje');
     const selects = screen.queryAllByRole('combobox');
@@ -96,6 +122,15 @@ describe('ProjectsListPage', () => {
   });
 
   it('AC4: clic en una tarjeta navega al detalle del proyecto', async () => {
+    useStudentProjects.mockReturnValue({
+      projects: mockProjects,
+      skills: mockSkills,
+      loading: false,
+      error: null,
+      selectedSkillId: '',
+      setSelectedSkillId: vi.fn(),
+      refresh: vi.fn(),
+    });
     renderPage();
     const card = await screen.findByText('App de reciclaje');
     const link = card.closest('a') ?? screen.getByRole('link', { name: /App de reciclaje/i });
@@ -103,13 +138,29 @@ describe('ProjectsListPage', () => {
   });
 
   it('AC5: muestra estado vacío si no hay proyectos', async () => {
-    getAllProjects.mockResolvedValue([]);
+    useStudentProjects.mockReturnValue({
+      projects: [],
+      skills: mockSkills,
+      loading: false,
+      error: null,
+      selectedSkillId: '',
+      setSelectedSkillId: vi.fn(),
+      refresh: vi.fn(),
+    });
     renderPage();
     await screen.findByText(/no hay proyectos/i);
   });
 
   it('AC6: muestra indicador de carga mientras se obtienen los datos', async () => {
-    getAllProjects.mockReturnValue(new Promise(() => {}));
+    useStudentProjects.mockReturnValue({
+      projects: [],
+      skills: [],
+      loading: true,
+      error: null,
+      selectedSkillId: '',
+      setSelectedSkillId: vi.fn(),
+      refresh: vi.fn(),
+    });
     renderPage();
     expect(screen.getByText(/cargando/i)).toBeInTheDocument();
   });

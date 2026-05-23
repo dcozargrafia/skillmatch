@@ -1,36 +1,20 @@
-import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getProjectById } from '../../../infrastructure/api/projectApi.js';
-import { createApplication } from '../../../infrastructure/api/applicationApi.js';
-import { getAllSkills } from '../../../infrastructure/api/skillsApi.js';
+import useStudentProjectDetail from '../../hooks/useStudentProjectDetail.jsx';
 
 function ProjectDetailPage() {
   const { id } = useParams();
-  const [project, setProject] = useState(null);
-  const [skills, setSkills] = useState([]);
-  const [applied, setApplied] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
+  const {
+    project,
+    skills,
+    applied,
+    loading,
+    error,
+    successMessage,
+    handleApply,
+  } = useStudentProjectDetail(id);
 
-  useEffect(() => {
-    getProjectById(id).then(setProject);
-    getAllSkills().then(setSkills);
-  }, [id]);
-
-  async function handleApply() {
-    setErrorMsg('');
-    try {
-      await createApplication(id);
-      setApplied(true);
-    } catch (err) {
-      if (err?.response?.status === 409) {
-        setApplied(true);
-      } else {
-        setErrorMsg('Error al aplicar al proyecto. Intenta de nuevo.');
-      }
-    }
-  }
-
-  if (!project) return <p className="loading">Cargando...</p>;
+  if (loading) return <p className="loading">Cargando...</p>;
+  if (!project) return null;
 
   return (
     <div>
@@ -82,14 +66,25 @@ function ProjectDetailPage() {
         </div>
       )}
 
-      {errorMsg && (
+      {error && (
         <div className="alert alert--error" role="alert" style={{ marginBottom: 'var(--space-4)' }}>
-          {errorMsg}
+          {error}
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="alert alert--success" role="status" style={{ marginBottom: 'var(--space-4)' }}>
+          {successMessage}
         </div>
       )}
 
       {project.status === 'pending' && (
-        <button type="button" className="btn btn--primary btn--lg" onClick={handleApply} disabled={applied}>
+        <button
+          type="button"
+          className="btn btn--primary btn--lg"
+          onClick={handleApply}
+          disabled={applied}
+        >
           {applied ? 'Ya has aplicado' : 'Aplicar a este proyecto'}
         </button>
       )}

@@ -3,22 +3,11 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import ProjectDetailPage from './ProjectDetailPage';
 
-vi.mock('../../../infrastructure/api/projectApi.js', () => ({
-  getProjectById: vi.fn(),
+vi.mock('../../../ui/hooks/useStudentProjectDetail.jsx', () => ({
+  default: vi.fn(),
 }));
 
-vi.mock('../../../infrastructure/api/applicationApi.js', () => ({
-  createApplication: vi.fn(),
-  getApplicationsByProject: vi.fn(),
-}));
-
-vi.mock('../../../infrastructure/api/skillsApi.js', () => ({
-  getAllSkills: vi.fn(),
-}));
-
-import { getProjectById } from '../../../infrastructure/api/projectApi.js';
-import { createApplication } from '../../../infrastructure/api/applicationApi.js';
-import { getAllSkills } from '../../../infrastructure/api/skillsApi.js';
+import useStudentProjectDetail from '../../../ui/hooks/useStudentProjectDetail.jsx';
 
 const mockSkills = [
   { id: 's1', name: 'React' },
@@ -53,21 +42,36 @@ function renderPage(projectId = 'p1') {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  getProjectById.mockResolvedValue(mockProject);
-  createApplication.mockResolvedValue({ id: 'a1', status: 'pending' });
-  getAllSkills.mockResolvedValue(mockSkills);
 });
 
 describe('ProjectDetailPage', () => {
-  it('AC1: carga el proyecto desde getProjectById con el id de la URL', async () => {
+  it('AC1: carga el proyecto con el id de la URL', async () => {
+    useStudentProjectDetail.mockReturnValue({
+      project: mockProject,
+      skills: mockSkills,
+      applied: false,
+      loading: false,
+      error: null,
+      successMessage: '',
+      handleApply: vi.fn(),
+    });
     renderPage();
-    await waitFor(() => expect(getProjectById).toHaveBeenCalledWith('p1'));
+    await screen.findByText('App de reciclaje');
+    expect(screen.getByText('App de reciclaje')).toBeInTheDocument();
   });
 
   it('AC2: muestra título, descripción, objetivos, horas, deadline, modalidad, estado y skills', async () => {
+    useStudentProjectDetail.mockReturnValue({
+      project: mockProject,
+      skills: mockSkills,
+      applied: false,
+      loading: false,
+      error: null,
+      successMessage: '',
+      handleApply: vi.fn(),
+    });
     renderPage();
     await screen.findByText('App de reciclaje');
-
     expect(screen.getByText('Desarrollar app para gestión de reciclaje')).toBeInTheDocument();
     expect(screen.getByText('Reducir residuos un 30%')).toBeInTheDocument();
     expect(screen.getByText('80')).toBeInTheDocument();
@@ -78,66 +82,97 @@ describe('ProjectDetailPage', () => {
     expect(screen.getByText(/Node\.js/)).toBeInTheDocument();
   });
 
-  it('AC3: muestra botón Aplicar si el proyecto está en pending y el estudiante no ha aplicado', async () => {
+  it('AC3: muestra botón Aplicar si el proyecto está en pending y no ha aplicado', async () => {
+    useStudentProjectDetail.mockReturnValue({
+      project: mockProject,
+      skills: mockSkills,
+      applied: false,
+      loading: false,
+      error: null,
+      successMessage: '',
+      handleApply: vi.fn(),
+    });
     renderPage();
     await screen.findByText('App de reciclaje');
-
     expect(screen.getByRole('button', { name: /^aplicar a este proyecto$/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^aplicar a este proyecto$/i })).not.toBeDisabled();
   });
 
-  it('AC4: al clic en Aplicar llama a createApplication con el project_id', async () => {
+  it('AC4: al clic en Aplicar llama a handleApply', async () => {
+    const handleApply = vi.fn().mockResolvedValue(undefined);
+    useStudentProjectDetail.mockReturnValue({
+      project: mockProject,
+      skills: mockSkills,
+      applied: false,
+      loading: false,
+      error: null,
+      successMessage: '',
+      handleApply,
+    });
     renderPage();
     await screen.findByText('App de reciclaje');
-
     fireEvent.click(screen.getByRole('button', { name: /^aplicar a este proyecto$/i }));
-
-    await waitFor(() =>
-      expect(createApplication).toHaveBeenCalledWith('p1')
-    );
+    await waitFor(() => expect(handleApply).toHaveBeenCalled());
   });
 
   it('AC5: tras aplicar el botón cambia a "Ya has aplicado" y se deshabilita', async () => {
+    useStudentProjectDetail.mockReturnValue({
+      project: mockProject,
+      skills: mockSkills,
+      applied: true,
+      loading: false,
+      error: null,
+      successMessage: 'Te has postulado al proyecto correctamente.',
+      handleApply: vi.fn(),
+    });
     renderPage();
     await screen.findByText('App de reciclaje');
-
-    fireEvent.click(screen.getByRole('button', { name: /^aplicar a este proyecto$/i }));
-
-    await screen.findByRole('button', { name: /ya has aplicado/i });
+    expect(screen.getByRole('button', { name: /ya has aplicado/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /ya has aplicado/i })).toBeDisabled();
   });
 
-  it('AC6: si el backend responde 409 el botón cambia a "Ya has aplicado" deshabilitado', async () => {
-    createApplication.mockRejectedValueOnce(
-      Object.assign(new Error('Conflict'), { response: { status: 409 } })
-    );
+  it('AC6: muestra mensaje de éxito tras aplicar', async () => {
+    useStudentProjectDetail.mockReturnValue({
+      project: mockProject,
+      skills: mockSkills,
+      applied: true,
+      loading: false,
+      error: null,
+      successMessage: 'Te has postulado al proyecto correctamente.',
+      handleApply: vi.fn(),
+    });
     renderPage();
-    await screen.findByText('App de reciclaje');
-
-    fireEvent.click(screen.getByRole('button', { name: /^aplicar a este proyecto$/i }));
-
-    await screen.findByRole('button', { name: /ya has aplicado/i });
-    expect(screen.getByRole('button', { name: /ya has aplicado/i })).toBeDisabled();
+    await screen.findByText(/te has postulado/i);
   });
 
   it('AC7: no muestra el botón Aplicar si el proyecto no está en pending', async () => {
-    getProjectById.mockResolvedValue({ ...mockProject, status: 'assigned' });
+    useStudentProjectDetail.mockReturnValue({
+      project: { ...mockProject, status: 'assigned' },
+      skills: mockSkills,
+      applied: false,
+      loading: false,
+      error: null,
+      successMessage: '',
+      handleApply: vi.fn(),
+    });
     renderPage();
     await screen.findByText('App de reciclaje');
-
     expect(screen.queryByRole('button', { name: /^aplicar a este proyecto$/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /ya has aplicado/i })).not.toBeInTheDocument();
   });
 
-  it('AC8: muestra error visible si createApplication falla con error distinto de 409', async () => {
-    createApplication.mockRejectedValueOnce(
-      Object.assign(new Error('Server Error'), { response: { status: 500 } })
-    );
+  it('AC8: muestra error visible si handleApply falla', async () => {
+    useStudentProjectDetail.mockReturnValue({
+      project: mockProject,
+      skills: mockSkills,
+      applied: false,
+      loading: false,
+      error: 'Error al aplicarse al proyecto. Intenta de nuevo.',
+      successMessage: '',
+      handleApply: vi.fn(),
+    });
     renderPage();
     await screen.findByText('App de reciclaje');
-
-    fireEvent.click(screen.getByRole('button', { name: /^aplicar a este proyecto$/i }));
-
-    await screen.findByRole('alert');
+    expect(screen.getByRole('alert')).toBeInTheDocument();
   });
 });

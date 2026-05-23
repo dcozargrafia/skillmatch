@@ -1,27 +1,15 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getAllProjects } from '../../../infrastructure/api/projectApi.js';
-import { getAllSkills } from '../../../infrastructure/api/skillsApi.js';
+import useStudentProjects from '../../hooks/useStudentProjects.jsx';
 
 function ProjectsListPage() {
-  const [projects, setProjects] = useState([]);
-  const [skills, setSkills] = useState([]);
-  const [skillId, setSkillId] = useState('');
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    getAllSkills().then(setSkills);
-  }, []);
-
-  useEffect(() => {
-    setLoading(true);
-    const filters = {};
-    if (skillId) filters.skill_id = skillId;
-    getAllProjects(filters).then((data) => {
-      setProjects(data);
-      setLoading(false);
-    });
-  }, [skillId]);
+  const {
+    projects,
+    skills,
+    loading,
+    error,
+    selectedSkillId,
+    setSelectedSkillId,
+  } = useStudentProjects();
 
   return (
     <div>
@@ -35,8 +23,8 @@ function ProjectsListPage() {
           <select
             aria-label="Skill"
             className="form-select"
-            value={skillId}
-            onChange={(e) => setSkillId(e.target.value)}
+            value={selectedSkillId}
+            onChange={(e) => setSelectedSkillId(e.target.value)}
           >
             <option value="">Todas</option>
             {skills.map((s) => (

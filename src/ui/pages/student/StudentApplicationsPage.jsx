@@ -1,89 +1,14 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getAssignmentsByStatus } from '../../../infrastructure/api/assignmentApi.js';
-import { getDeliverablesByAssignment, startDeliverable, submitDeliverable } from '../../../infrastructure/api/deliverableApi.js';
-
-function DeliverableCard({ deliverable, onStart, onSubmit }) {
-  const [fileUrl, setFileUrl] = useState('');
-
-  return (
-    <div className="card card--accent">
-      <div className="card__header">
-        <h4 className="card__title">{deliverable.title}</h4>
-        <span className={`badge${deliverable.status === 'approved' ? ' badge--success' : deliverable.status === 'rejected' ? ' badge--error' : deliverable.status === 'in_review' ? ' badge--warning' : ''}`}>
-          {deliverable.status}
-        </span>
-      </div>
-      {deliverable.description && (
-        <div className="card__body"><p>{deliverable.description}</p></div>
-      )}
-
-      {deliverable.status === 'pending' && (
-        <div className="card__footer">
-          <button className="btn btn--secondary btn--sm" onClick={() => onStart(deliverable.id)}>
-            Iniciar
-          </button>
-        </div>
-      )}
-
-      {deliverable.status === 'in_progress' && (
-        <div className="card__footer" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 'var(--space-3)' }}>
-          <div className="form-field">
-            <label className="form-label">URL del archivo</label>
-            <input
-              type="text"
-              aria-label="URL del archivo"
-              className="form-input"
-              value={fileUrl}
-              onChange={(e) => setFileUrl(e.target.value)}
-            />
-          </div>
-          <button className="btn btn--primary btn--sm" onClick={() => onSubmit(deliverable.id, fileUrl)}>
-            Enviar a revisión
-          </button>
-        </div>
-      )}
-
-      {deliverable.status === 'rejected' && (
-        <div className="card__footer">
-          <button className="btn btn--secondary btn--sm" onClick={() => onStart(deliverable.id)}>
-            Reintentar
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
+import useStudentAssignments from '../../hooks/useStudentAssignments.jsx';
+import { DeliverableCard } from '../../components/DeliverableCard.jsx';
 
 function StudentApplicationsPage() {
-  const [assignments, setAssignments] = useState([]);
-  const [deliverables, setDeliverables] = useState({});
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    getAssignmentsByStatus(['assigned', 'in_progress', 'in_review', 'rejected']).then(async (assigns) => {
-      const dels = await Promise.all(
-        assigns.map((a) => getDeliverablesByAssignment(a.id))
-      );
-      const delsMap = {};
-      assigns.forEach((a, i) => {
-        delsMap[a.id] = dels[i] || [];
-      });
-      setDeliverables(delsMap);
-      setAssignments(assigns);
-      setLoading(false);
-    });
-  }, []);
-
-  async function handleStart(deliverableId) {
-    const updated = await startDeliverable(deliverableId);
-    return updated;
-  }
-
-  async function handleSubmit(deliverableId, fileUrl) {
-    const updated = await submitDeliverable(deliverableId, fileUrl);
-    return updated;
-  }
+  const {
+    assignments,
+    deliverablesByAssignment,
+    loading,
+    error,
+  } = useStudentAssignments();
 
   if (loading) return <p className="loading">Cargando...</p>;
 
@@ -116,12 +41,11 @@ function StudentApplicationsPage() {
               <span className="badge">{assignment.project_status}</span>
             </div>
             <div className="card__body">
-              {(deliverables[assignment.id] || []).map((d) => (
+              {(deliverablesByAssignment[assignment.id] || []).map((d) => (
                 <DeliverableCard
                   key={d.id}
                   deliverable={d}
-                  onStart={handleStart}
-                  onSubmit={handleSubmit}
+                  variant="student"
                 />
               ))}
             </div>

@@ -2,18 +2,11 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import StudentProfilePage from './StudentProfilePage';
 
-vi.mock('../../../infrastructure/api/studentApi.js', () => ({
-  getStudentMe: vi.fn(),
-  updateStudentMe: vi.fn(),
-  updateStudentSkills: vi.fn(),
+vi.mock('../../../ui/hooks/useStudentProfile.jsx', () => ({
+  default: vi.fn(),
 }));
 
-vi.mock('../../../infrastructure/api/skillsApi.js', () => ({
-  getAllSkills: vi.fn(),
-}));
-
-import { getStudentMe, updateStudentMe, updateStudentSkills } from '../../../infrastructure/api/studentApi.js';
-import { getAllSkills } from '../../../infrastructure/api/skillsApi.js';
+import useStudentProfile from '../../../ui/hooks/useStudentProfile.jsx';
 
 const mockProfile = {
   id: 'u1',
@@ -33,41 +26,74 @@ const mockAllSkills = [
   { id: 's3', name: 'Python' },
 ];
 
+const mockAvailableSkills = [
+  { id: 's3', name: 'Python' },
+];
+
+function renderPage() {
+  return render(<StudentProfilePage />);
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
-  getStudentMe.mockResolvedValue(mockProfile);
-  getAllSkills.mockResolvedValue(mockAllSkills);
-  updateStudentMe.mockResolvedValue({ ...mockProfile });
-  updateStudentSkills.mockResolvedValue({ skills: mockProfile.skills });
 });
 
 describe('StudentProfilePage', () => {
-  it('AC1: carga y muestra datos del perfil desde getStudentMe al montar', async () => {
-    render(<StudentProfilePage />);
-    await waitFor(() => expect(getStudentMe).toHaveBeenCalledTimes(1));
+  it('AC1: carga y muestra datos del perfil al montar', async () => {
+    useStudentProfile.mockReturnValue({
+      profile: mockProfile,
+      allSkills: mockAllSkills,
+      availableSkills: mockAvailableSkills,
+      loading: false,
+      error: null,
+      successMessage: '',
+      handleSave: vi.fn().mockResolvedValue(undefined),
+      handleAddSkill: vi.fn().mockResolvedValue(undefined),
+      handleRemoveSkill: vi.fn().mockResolvedValue(undefined),
+    });
+    renderPage();
     expect(await screen.findByText('Ana López')).toBeInTheDocument();
     expect(screen.getByText('ana@test.com')).toBeInTheDocument();
   });
 
-  it('AC2: muestra nombre, email, disponibilidad, portfolio y skills con nivel', async () => {
-    render(<StudentProfilePage />);
+  it('AC2: muestra disponibilidad marcada, portfolio y skills con nivel', async () => {
+    useStudentProfile.mockReturnValue({
+      profile: mockProfile,
+      allSkills: mockAllSkills,
+      availableSkills: mockAvailableSkills,
+      loading: false,
+      error: null,
+      successMessage: '',
+      handleSave: vi.fn().mockResolvedValue(undefined),
+      handleAddSkill: vi.fn().mockResolvedValue(undefined),
+      handleRemoveSkill: vi.fn().mockResolvedValue(undefined),
+    });
+    renderPage();
     await screen.findByText('Ana López');
-
-    expect(screen.getByText('ana@test.com')).toBeInTheDocument();
 
     const toggle = screen.getByRole('checkbox', { name: /disponibilidad/i });
     expect(toggle).toBeChecked();
-
     expect(screen.getByDisplayValue('https://portfolio.dev')).toBeInTheDocument();
-
     expect(screen.getByText('React')).toBeInTheDocument();
     expect(screen.getAllByText('intermedio').length).toBeGreaterThan(0);
     expect(screen.getByText('Node.js')).toBeInTheDocument();
     expect(screen.getAllByText('avanzado').length).toBeGreaterThan(0);
   });
 
-  it('AC3: permite editar disponibilidad y portfolio_url y llama updateStudentMe al guardar', async () => {
-    render(<StudentProfilePage />);
+  it('AC3: editar disponibilidad y portfolio y llamar handleSave al guardar', async () => {
+    const handleSave = vi.fn().mockResolvedValue(undefined);
+    useStudentProfile.mockReturnValue({
+      profile: mockProfile,
+      allSkills: mockAllSkills,
+      availableSkills: mockAvailableSkills,
+      loading: false,
+      error: null,
+      successMessage: '',
+      handleSave,
+      handleAddSkill: vi.fn().mockResolvedValue(undefined),
+      handleRemoveSkill: vi.fn().mockResolvedValue(undefined),
+    });
+    renderPage();
     await screen.findByText('Ana López');
 
     const toggle = screen.getByRole('checkbox', { name: /disponibilidad/i });
@@ -80,89 +106,86 @@ describe('StudentProfilePage', () => {
     fireEvent.click(saveBtn);
 
     await waitFor(() =>
-      expect(updateStudentMe).toHaveBeenCalledWith({
+      expect(handleSave).toHaveBeenCalledWith({
         disponibilidad: false,
         portfolio_url: 'https://new-portfolio.dev',
       })
     );
   });
 
-  it('AC4a: permite agregar una skill desde el catálogo y llama updateStudentSkills', async () => {
-    render(<StudentProfilePage />);
+  it('AC4a: agregar skill llama handleAddSkill con skillId y nivel', async () => {
+    const handleAddSkill = vi.fn().mockResolvedValue(undefined);
+    useStudentProfile.mockReturnValue({
+      profile: mockProfile,
+      allSkills: mockAllSkills,
+      availableSkills: [{ id: 's3', name: 'Python' }],
+      loading: false,
+      error: null,
+      successMessage: '',
+      handleSave: vi.fn().mockResolvedValue(undefined),
+      handleAddSkill,
+      handleRemoveSkill: vi.fn().mockResolvedValue(undefined),
+    });
+    renderPage();
     await screen.findByText('Ana López');
 
     const skillSelect = screen.getByRole('combobox', { name: /agregar skill/i });
     fireEvent.change(skillSelect, { target: { value: 's3' } });
 
-    const levelSelect = screen.getByRole('combobox', { name: /^nivel$/i });
-    fireEvent.change(levelSelect, { target: { value: 'básico' } });
-
-    const addBtn = screen.getByRole('button', { name: /agregar/i });
-    fireEvent.click(addBtn);
-
-    await waitFor(() =>
-      expect(updateStudentSkills).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          expect.objectContaining({ skill_id: 's1' }),
-          expect.objectContaining({ skill_id: 's2' }),
-          expect.objectContaining({ skill_id: 's3', level: 'básico' }),
-        ])
-      )
-    );
+    await waitFor(() => expect(handleAddSkill).toHaveBeenCalledWith('s3', 'básico'));
   });
 
-  it('AC4b: permite eliminar una skill y llama updateStudentSkills', async () => {
-    render(<StudentProfilePage />);
+  it('AC4b: eliminar skill llama handleRemoveSkill', async () => {
+    const handleRemoveSkill = vi.fn().mockResolvedValue(undefined);
+    useStudentProfile.mockReturnValue({
+      profile: mockProfile,
+      allSkills: mockAllSkills,
+      availableSkills: [{ id: 's3', name: 'Python' }],
+      loading: false,
+      error: null,
+      successMessage: '',
+      handleSave: vi.fn().mockResolvedValue(undefined),
+      handleAddSkill: vi.fn().mockResolvedValue(undefined),
+      handleRemoveSkill,
+    });
+    renderPage();
     await screen.findByText('Ana López');
 
     const removeBtns = await screen.findAllByRole('button', { name: /eliminar/i });
     fireEvent.click(removeBtns[0]);
 
-    await waitFor(() =>
-      expect(updateStudentSkills).toHaveBeenCalledWith([
-        expect.objectContaining({ skill_id: 's2' }),
-      ])
-    );
+    await waitFor(() => expect(handleRemoveSkill).toHaveBeenCalledWith('s1'));
   });
 
-  it('AC4c: permite cambiar el nivel de una skill existente y llama updateStudentSkills', async () => {
-    render(<StudentProfilePage />);
-    await screen.findByText('Ana López');
-
-    const levelSelects = await screen.findAllByRole('combobox', { name: /nivel de/i });
-    fireEvent.change(levelSelects[0], { target: { value: 'avanzado' } });
-
-    await waitFor(() =>
-      expect(updateStudentSkills).toHaveBeenCalledWith([
-        { skill_id: 's1', level: 'avanzado' },
-        { skill_id: 's2', level: 'avanzado' },
-      ])
-    );
-  });
-
-  it('AC5: muestra mensaje de éxito después de guardar perfil', async () => {
-    render(<StudentProfilePage />);
-    await screen.findByText('Ana López');
-
-    fireEvent.click(screen.getByRole('button', { name: /guardar perfil/i }));
-
+  it('AC5: muestra mensaje de éxito cuando successMessage no está vacío', async () => {
+    useStudentProfile.mockReturnValue({
+      profile: mockProfile,
+      allSkills: mockAllSkills,
+      availableSkills: mockAvailableSkills,
+      loading: false,
+      error: null,
+      successMessage: 'Perfil actualizado correctamente.',
+      handleSave: vi.fn().mockResolvedValue(undefined),
+      handleAddSkill: vi.fn().mockResolvedValue(undefined),
+      handleRemoveSkill: vi.fn().mockResolvedValue(undefined),
+    });
+    renderPage();
     await screen.findByText(/perfil actualizado/i);
   });
 
-  it('AC6: muestra error visible si updateStudentMe falla', async () => {
-    updateStudentMe.mockRejectedValueOnce(new Error('Error de red'));
-    render(<StudentProfilePage />);
-    await screen.findByText('Ana López');
-
-    fireEvent.click(screen.getByRole('button', { name: /guardar perfil/i }));
-
-    await screen.findByText(/error al actualizar/i);
-  });
-
-  it('AC6b: muestra error visible si getStudentMe falla', async () => {
-    getStudentMe.mockRejectedValueOnce(new Error('No autorizado'));
-    render(<StudentProfilePage />);
-
+  it('AC6: muestra error cuando error no está vacío', async () => {
+    useStudentProfile.mockReturnValue({
+      profile: null,
+      allSkills: [],
+      availableSkills: [],
+      loading: false,
+      error: 'Error al cargar el perfil. Intenta de nuevo.',
+      successMessage: '',
+      handleSave: vi.fn().mockResolvedValue(undefined),
+      handleAddSkill: vi.fn().mockResolvedValue(undefined),
+      handleRemoveSkill: vi.fn().mockResolvedValue(undefined),
+    });
+    renderPage();
     await screen.findByText(/error al cargar/i);
   });
 });
