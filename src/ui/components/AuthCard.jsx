@@ -6,7 +6,7 @@ export function AuthCard({ brand = true, title, subtitle, children }) {
           <div className="auth-card__brand">
             <img
               className="auth-card__logo"
-              src="/branding/logo.svg"
+              src="/branding/logo-navbar-tight.svg"
               alt="SkillMatch"
             />
           </div>
