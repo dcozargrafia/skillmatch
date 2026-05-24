@@ -1,0 +1,16 @@
+Ejemplo React:
+
+<img
+  src="/branding/logo-navbar-tight.png"
+  alt="SkillMatch Solidarity"
+  className="navbar-logo"
+/>
+
+Ejemplo CSS:
+
+.navbar-logo {
+  height: 60px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
