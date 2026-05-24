@@ -9,7 +9,7 @@ function StudentLayout() {
     <>
       <header className="app-header">
         <Link to="/student/projects" className="app-header__brand">
-          <img src="/branding/logo.svg" alt="SkillMatch" className="app-header__logo" />
+          <img src="/branding/logo-navbar-tight.svg" alt="SkillMatch" className="app-header__logo" />
         </Link>
         <div className="app-header__user">
           <span className="app-header__name">{user?.name} · Estudiante</span>
