@@ -9,7 +9,7 @@ function AdminLayout() {
     <>
       <header className="app-header">
         <Link to="/admin" className="app-header__brand">
-          Skill<span>Match</span>
+            <img src="/branding/logo.svg" alt="SkillMatch" className="app-header__logo" />
         </Link>
         <div className="app-header__user">
           <span className="app-header__name">{user?.name} · Admin</span>

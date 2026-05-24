@@ -1,0 +1,11 @@
+{
+  "name": "SkillMatch Solidarity",
+  "short_name": "SkillMatch",
+  "icons": [
+    { "src": "/favicon-192x192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/favicon-512x512.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "theme_color": "#BFF66F",
+  "background_color": "#0F1217",
+  "display": "standalone"
+}
