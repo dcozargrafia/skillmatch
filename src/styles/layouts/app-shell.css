@@ -20,15 +20,14 @@
 }
 
 .app-header__brand {
-  font-size: var(--text-xl);
-  font-weight: var(--weight-bold);
-  color: var(--color-text);
+  display: flex;
+  align-items: center;
   text-decoration: none;
-  letter-spacing: -0.02em;
 }
-
-.app-header__brand span {
-  color: var(--color-accent-dark);
+.app-header__logo {
+  display: block;
+  height: 200px;
+  width: auto;
 }
 
 .app-header__user {
@@ -94,10 +93,30 @@
 
 /* ── Contenido principal ── */
 .app-main {
+  position: relative;
+  isolation: isolate;
   flex: 1;
   overflow-y: auto;
   padding: var(--space-8) var(--space-8);
   max-width: calc(var(--container-max) - var(--sidebar-width));
+}
+
+.app-main::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('/branding/logo-transparent-512.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: min(720px, 65vw);
+  opacity: 0.30;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app-main > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* ── Responsivo: sidebar colapsa ── */
@@ -120,5 +139,9 @@
 
   .app-main {
     padding: var(--space-5) var(--space-4);
+  }
+
+  .app-main::before {
+    background-size: min(320px, 70vw);
   }
 }

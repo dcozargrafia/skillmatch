@@ -5,7 +5,7 @@ function PublicLayout() {
     <>
       <header className="app-header">
         <Link to="/" className="app-header__brand">
-          Skill<span>Match</span>
+            <img src="/branding/logo.svg" alt="SkillMatch" className="app-header__logo" />
         </Link>
         <nav className="app-header__user">
           <Link to="/login" className="btn btn--ghost btn--sm">Iniciar sesión</Link>
