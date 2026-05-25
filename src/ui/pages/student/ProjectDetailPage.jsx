@@ -4,6 +4,7 @@ import { PageHeader } from '../../components/PageHeader.jsx';
 import { Section } from '../../components/Section.jsx';
 import { AlertBlock } from '../../components/AlertBlock.jsx';
 import { StatusBadge } from '../../components/StatusBadge.jsx';
+import { formatDate } from '../../../shared/formatDate.js';
 
 function ProjectDetailPage() {
   const { id } = useParams();
@@ -43,7 +44,7 @@ function ProjectDetailPage() {
           <span className="text-muted text-sm">
             Horas estimadas: <span className="font-mono">{project.estimated_hours}</span>
           </span>
-          <span className="text-muted text-sm font-mono">{project.deadline}</span>
+          <span className="text-muted text-sm font-mono">{formatDate(project.deadline)}</span>
         </div>
       </div>
 

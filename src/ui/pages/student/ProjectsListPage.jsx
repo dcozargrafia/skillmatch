@@ -3,6 +3,7 @@ import useStudentProjects from '../../hooks/useStudentProjects.jsx';
 import { PageHeader } from '../../components/PageHeader.jsx';
 import { EmptyState } from '../../components/EmptyState.jsx';
 import { StatusBadge } from '../../components/StatusBadge.jsx';
+import { formatDateShort } from '../../../shared/formatDate.js';
 
 function ProjectsListPage() {
   const {
@@ -64,7 +65,7 @@ function ProjectsListPage() {
                 })}
               </div>
               <div className="card__footer">
-                <span className="font-mono text-sm text-muted">{project.deadline}</span>
+                <span className="font-mono text-sm text-muted">{formatDateShort(project.deadline)}</span>
                 <StatusBadge>{project.status}</StatusBadge>
               </div>
             </Link>

@@ -3,6 +3,7 @@ import useNgoProjects from '../../hooks/useNgoProjects.jsx';
 import { PageHeader } from '../../components/PageHeader.jsx';
 import { EmptyState } from '../../components/EmptyState.jsx';
 import { StatusBadge } from '../../components/StatusBadge.jsx';
+import { formatDateShort } from '../../../shared/formatDate.js';
 
 function NgoProjectsPage() {
   const { projects, loading } = useNgoProjects();
@@ -28,7 +29,7 @@ function NgoProjectsPage() {
               <div className="card__header">
                 <div>
                   <h2 className="card__title">{p.title}</h2>
-                  <p className="card__subtitle font-mono">{p.deadline}</p>
+                  <p className="card__subtitle font-mono">{formatDateShort(p.deadline)}</p>
                 </div>
                 <StatusBadge>{p.modality}</StatusBadge>
               </div>
