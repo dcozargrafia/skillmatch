@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import useProjectDetail from '../../hooks/useProjectDetail.jsx';
 import { DeliverableCard } from '../../components/DeliverableCard.jsx';
+import { formatDate, formatDateTime } from '../../../shared/formatDate.js';
 import {
   hasActiveDeliverable,
   isTerminalStatus,
@@ -123,7 +124,7 @@ function NgoProjectDetailPage() {
         </div>
         <div className="card__footer">
           <span className="text-muted text-sm">
-            Fecha límite: <span className="font-mono">{project.deadline}</span>
+            Fecha límite: <span className="font-mono">{formatDate(project.deadline)}</span>
           </span>
         </div>
       </div>
@@ -162,7 +163,7 @@ function NgoProjectDetailPage() {
             </div>
             {assignment.start_date && (
               <div className="card__footer">
-                <span className="text-muted text-sm font-mono">{assignment.start_date}</span>
+                <span className="text-muted text-sm font-mono">{formatDateTime(assignment.start_date)}</span>
               </div>
             )}
           </div>

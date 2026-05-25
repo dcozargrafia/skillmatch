@@ -235,8 +235,7 @@ describe('DeliverableCard', () => {
     it('renders formatted created_at date', () => {
       const withDate = { ...mockWithDate, created_at: '2026-05-10T10:00:00Z' };
       render(<DeliverableCard {...defaultProps} deliverable={withDate} variant="readonly" />);
-      // Check date is rendered (es-ES locale produces 10/5/2026 or 10/05/2026)
-      expect(screen.getByText(/10[/.]5[/.]2026/i)).toBeInTheDocument();
+      expect(screen.getByText(/10 may 2026/i)).toBeInTheDocument();
     });
 
     it('shows file_url when present', () => {

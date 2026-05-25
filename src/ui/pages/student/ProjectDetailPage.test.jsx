@@ -139,4 +139,19 @@ describe('ProjectDetailPage', () => {
     await screen.findByText('App de reciclaje');
     expect(screen.getByRole('alert')).toBeInTheDocument();
   });
+
+  it('AC9: muestra em dash cuando deadline es null', async () => {
+    useStudentProjectDetail.mockReturnValue({
+      project: { ...mockProject, deadline: null },
+      skills: mockSkills,
+      applied: false,
+      loading: false,
+      error: null,
+      successMessage: '',
+      handleApply: vi.fn(),
+    });
+    renderPage();
+    await screen.findByText('App de reciclaje');
+    expect(screen.getByText('—')).toBeInTheDocument();
+  });
 });

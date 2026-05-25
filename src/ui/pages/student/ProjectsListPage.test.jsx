@@ -80,7 +80,7 @@ describe('ProjectsListPage', () => {
     expect(screen.getByText('Desarrollar app para gestión de reciclaje')).toBeInTheDocument();
     expect(screen.getByText('Eco ONG')).toBeInTheDocument();
     expect(screen.getByText('remoto')).toBeInTheDocument();
-    expect(screen.getByText('2026-08-01')).toBeInTheDocument();
+    expect(screen.getByText('01/08/2026')).toBeInTheDocument();
     expect(screen.getAllByText('React').length).toBeGreaterThan(0);
   });
 

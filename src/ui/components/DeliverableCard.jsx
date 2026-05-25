@@ -12,6 +12,7 @@
 
 import { useState } from 'react';
 import { getDeliverableStatusLabel } from '../../domain/project/Project.js';
+import { formatDateTime } from '../../shared/formatDate.js';
 
 /**
  * @param {object} props
@@ -54,7 +55,7 @@ export function DeliverableCard({ deliverable, variant, onStart, onSubmit, onApp
         )}
         {deliverable.created_at && (
           <div className="card__footer">
-            <span className="text-muted text-sm font-mono">{new Date(deliverable.created_at).toLocaleDateString('es-ES')}</span>
+            <span className="text-muted text-sm font-mono">{formatDateTime(deliverable.created_at)}</span>
           </div>
         )}
         {deliverable.file_url && (

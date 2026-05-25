@@ -5,6 +5,7 @@ import useStudentCertificate from '../../hooks/useStudentCertificate.jsx';
 import useStudentReview from '../../hooks/useStudentReview.jsx';
 import { DeliverableCard } from '../../components/DeliverableCard.jsx';
 import { PageHeader } from '../../components/PageHeader.jsx';
+import { formatDateTime } from '../../../shared/formatDate.js';
 import { getStatusLabel, getProjectStatusMessage, sortDeliverables } from '../../../domain/project/Project.js';
 import { Section } from '../../components/Section.jsx';
 import { AlertBlock } from '../../components/AlertBlock.jsx';
@@ -43,7 +44,7 @@ function StudentAssignmentPage() {
     <div>
       <PageHeader
         title={assignment?.project_title}
-        subtitle={<span className="font-mono">{assignment?.start_date}</span>}
+        subtitle={<span className="font-mono">{formatDateTime(assignment?.start_date)}</span>}
       >
         <StatusBadge>{getStatusLabel(assignment?.project_status)}</StatusBadge>
       </PageHeader>

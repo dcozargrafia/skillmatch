@@ -7,6 +7,7 @@ import { Section } from '../../components/Section.jsx';
 import { EmptyState } from '../../components/EmptyState.jsx';
 import { AlertBlock } from '../../components/AlertBlock.jsx';
 import { StatusBadge } from '../../components/StatusBadge.jsx';
+import { formatDateTime } from '../../../shared/formatDate.js';
 
 function NgoProjectAssignmentPage() {
   const { id } = useParams();
@@ -62,7 +63,7 @@ function NgoProjectAssignmentPage() {
             <StatusBadge variant="accent">Asignado</StatusBadge>
           </div>
           <div className="card__footer">
-            <span className="text-muted text-sm font-mono">{assignment.start_date}</span>
+            <span className="text-muted text-sm font-mono">{formatDateTime(assignment.start_date)}</span>
           </div>
         </div>
       )}
